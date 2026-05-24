@@ -1,10 +1,9 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { fetchBackendData } from '../api';
 
 export default function AcademicHub() {
-    const [data, setData] = useState<any>(null);
+    const [_data, setData] = useState<any>(null);
 
     useEffect(() => {
         // Connect to .NET backend
@@ -253,7 +252,7 @@ export default function AcademicHub() {
 
 <tr className="bg-surface-container-low">
 <td className="p-sm border-b border-r border-outline-variant/50 text-center text-on-surface-variant font-label-caps text-label-caps">11:00 AM</td>
-<td className="p-sm border-b border-outline-variant/50 text-center font-label-caps text-label-caps text-on-surface-variant tracking-widest" colSpan="5">
+<td className="p-sm border-b border-outline-variant/50 text-center font-label-caps text-label-caps text-on-surface-variant tracking-widest" colSpan={5}>
                                         LUNCH BREAK
                                     </td>
 </tr>

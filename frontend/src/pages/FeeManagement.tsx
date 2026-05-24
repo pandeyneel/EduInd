@@ -1,10 +1,9 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { fetchBackendData } from '../api';
 
 export default function FeeManagement() {
-    const [data, setData] = useState<any>(null);
+    const [_data, setData] = useState<any>(null);
 
     useEffect(() => {
         // Connect to .NET backend
