@@ -1,280 +1,270 @@
-import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { fetchBackendData } from '../api';
+import {
+  IdCard,
+  GraduationCap,
+  CreditCard,
+  Edit2,
+  Printer,
+  Mail,
+  MailQuestion,
+  User,
+  MapPin,
+  Calendar,
+  Sparkles,
+  Trophy,
+  CheckCircle2
+} from 'lucide-react';
 
 export default function DetailedStudentProfile() {
-    const [_data, setData] = useState<any>(null);
+  const [_data, setData] = useState<any>(null);
 
-    useEffect(() => {
-        // Connect to .NET backend
-        fetchBackendData('DetailedStudentProfile').then(setData).catch(console.error);
-    }, []);
+  useEffect(() => {
+    // Connect to .NET backend
+    fetchBackendData('DetailedStudentProfile').then(setData).catch(console.error);
+  }, []);
 
-    return (
-        <>
+  return (
+    <div className="p-8 space-y-8 max-w-[1600px] mx-auto">
+      {/* Top Profile Header Sheet */}
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6 hover:border-slate-300 transition-all">
+        <div className="flex items-center gap-6">
+          {/* Avatar Container */}
+          <div className="relative">
+            <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-indigo-100 shadow-inner shrink-0 bg-slate-50 flex items-center justify-center">
+              <img
+                alt="Student Profile"
+                className="w-full h-full object-cover"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCg6sm8wj36OTAYFywWXrq1V9zDBwiXvBXm2VrX1WOS1bxkGqfuQQkmSBdLF15cTX93s4VfMxU7iJs8mv2cTQV0Nfz57keRWDkKCezLdJB9OKvEbK6tGNTC8AMx0sfHrCVdmhac-Tn_VOiNNJTdfjNETnSntgeBMyYuMPR10jFKweUTiiENBchi5U35XO_2PwInzvXBX59SDc-R8HD6ZPAcxAEmbbdiy_ya6BN8ER_tcb9kYfndG2FfXQ3C-uvsp5IzUZT7NwIvhi8"
+              />
+            </div>
+            <span className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white" />
+          </div>
+          <div>
+            <h2 className="font-display-lg text-xl font-bold text-slate-900 leading-tight">Alexander Lewis</h2>
+            <div className="flex flex-wrap gap-x-4 gap-y-2 mt-2 font-body-sm text-slate-400 text-xs font-semibold">
+              <span className="flex items-center gap-1.5"><IdCard className="w-4 h-4 text-slate-400" /> ID: STU-2023-0842</span>
+              <span className="hidden md:inline text-slate-200">•</span>
+              <span className="flex items-center gap-1.5"><GraduationCap className="w-4 h-4 text-slate-400" /> Grade 10 - Science Track</span>
+              <span className="hidden md:inline text-slate-200">•</span>
+              <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-bold">ACTIVE</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Dynamic Action Buttons */}
+        <div className="flex flex-wrap gap-2.5 w-full md:w-auto shrink-0">
+          <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs rounded-xl transition-all">
+            <Edit2 className="w-4 h-4 text-slate-400" />
+            Edit Profile
+          </button>
+          <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs rounded-xl transition-all">
+            <Printer className="w-4 h-4 text-slate-400" />
+            Print Docket
+          </button>
+          <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-title-sm text-xs font-semibold rounded-xl shadow-md shadow-indigo-100 transition-all duration-200">
+            <Mail className="w-4 h-4" />
+            Message Family
+          </button>
+        </div>
+      </div>
+
+      {/* Structured Multi-Panel Layout Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* Left Column: Personal Metadata */}
+        <div className="flex flex-col gap-8">
+          {/* Metadata Card */}
+          <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-6">
+            <h3 className="font-title-sm text-base font-bold text-slate-900 pb-3 border-b border-slate-100">
+              Personal Information
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <p className="font-label-caps text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Date of Birth</p>
+                <p className="font-body-md text-sm text-slate-700 font-medium flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-slate-400 shrink-0" /> March 14, 2008 (16 years)
+                </p>
+              </div>
+              <div>
+                <p className="font-label-caps text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Gender</p>
+                <p className="font-body-md text-sm text-slate-700 font-medium flex items-center gap-2">
+                  <User className="w-4 h-4 text-slate-400 shrink-0" /> Male
+                </p>
+              </div>
+              <div>
+                <p className="font-label-caps text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Contact Point</p>
+                <p className="font-body-md text-sm text-slate-700 font-medium flex items-center gap-2">
+                  <MailQuestion className="w-4 h-4 text-slate-400 shrink-0" /> alewis.student@eduind.com
+                </p>
+                <p className="font-body-md text-sm text-slate-700 font-medium flex items-center gap-2 mt-1.5">
+                  <span className="w-4 h-4 shrink-0" /> +1 (555) 019-8372
+                </p>
+              </div>
+              <div>
+                <p className="font-label-caps text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Residential Address</p>
+                <p className="font-body-md text-sm text-slate-700 font-medium flex items-start gap-2">
+                  <MapPin className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" /> 
+                  <span>482 Oakwood Drive, Apt 3B<br />Springfield, IL 62704</span>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Billing / Fee Ledger */}
+          <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-6">
+            <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+              <h3 className="font-title-sm text-base font-bold text-slate-900">Fee Summary</h3>
+              <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 font-label-caps text-[9px] font-bold">
+                UP TO DATE
+              </span>
+            </div>
+            <div>
+              <p className="font-label-caps text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Outstanding Balance</p>
+              <p className="font-display-lg text-2xl font-bold text-slate-900 leading-none">$0.00</p>
+            </div>
+            <div className="space-y-2.5">
+              <p className="font-label-caps text-[10px] text-slate-400 font-bold uppercase tracking-wider">Recent Transactions</p>
+              <div className="flex justify-between items-center text-xs font-medium">
+                <span className="text-slate-600 flex items-center gap-1.5">
+                  <CreditCard className="w-3.5 h-3.5 text-slate-400" /> Fall Term Tuition
+                </span>
+                <span className="text-slate-900">$4,200.00</span>
+              </div>
+              <div className="flex justify-between items-center text-xs font-medium">
+                <span className="text-slate-600 flex items-center gap-1.5">
+                  <CreditCard className="w-3.5 h-3.5 text-slate-400" /> Laboratory Fee
+                </span>
+                <span className="text-slate-900">$150.00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Columns: Academics & Timetables */}
+        <div className="lg:col-span-2 flex flex-col gap-8">
+          {/* Academic Stats & Subject List */}
+          <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-6">
+            <h3 className="font-title-sm text-base font-bold text-slate-900 pb-3 border-b border-slate-100">
+              Academic Snapshot
+            </h3>
             
+            {/* KPI Metrics */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="p-4 bg-slate-50 border border-slate-200/50 rounded-xl text-center flex flex-col justify-center">
+                <p className="font-label-caps text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-1">CURRENT GPA</p>
+                <p className="font-display-lg text-lg font-bold text-indigo-600 flex items-center justify-center gap-1">
+                  3.84 <Sparkles className="w-4 h-4 text-amber-500" />
+                </p>
+              </div>
+              <div className="p-4 bg-slate-50 border border-slate-200/50 rounded-xl text-center flex flex-col justify-center">
+                <p className="font-label-caps text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-1">CLASS RANK</p>
+                <p className="font-display-lg text-lg font-bold text-indigo-600 flex items-center justify-center gap-1">
+                  12 <Trophy className="w-3.5 h-3.5 text-amber-500" />
+                  <span className="text-[10px] text-slate-400 font-normal">/340</span>
+                </p>
+              </div>
+              <div className="p-4 bg-slate-50 border border-slate-200/50 rounded-xl text-center flex flex-col justify-center">
+                <p className="font-label-caps text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-1">CREDITS EARNED</p>
+                <p className="font-display-lg text-lg font-bold text-indigo-600">42.5</p>
+              </div>
+              <div className="p-4 bg-slate-50 border border-slate-200/50 rounded-xl text-center flex flex-col justify-center">
+                <p className="font-label-caps text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-1">CONDUCT RATING</p>
+                <p className="font-display-lg text-lg font-bold text-emerald-600 flex items-center justify-center gap-1">
+                  Excellent <CheckCircle2 className="w-3.5 h-3.5" />
+                </p>
+              </div>
+            </div>
 
-<nav className="hidden md:flex flex-col w-sidebar-width h-full fixed left-0 top-0 bg-primary dark:bg-primary-container z-50">
-<div className="p-lg flex items-center gap-sm border-b border-surface-tint/20">
-<div className="w-10 h-10 rounded-DEFAULT bg-secondary-fixed flex items-center justify-center shrink-0">
-<span className="material-symbols-outlined text-on-primary-fixed font-title-sm">school</span>
-</div>
-<div>
-<h1 className="font-display-lg text-[20px] text-on-primary dark:text-on-primary-fixed leading-tight">EduInd</h1>
-<p className="font-label-caps text-[10px] text-on-primary dark:text-on-primary-fixed opacity-60">Admin Terminal</p>
-</div>
-</div>
-<div className="p-md">
-<button className="w-full flex items-center justify-center gap-sm bg-secondary-fixed text-on-primary-fixed font-title-sm text-sm py-sm rounded-DEFAULT hover:opacity-90 transition-opacity">
-<span className="material-symbols-outlined text-[18px]">add</span>
-                Quick Report
-            </button>
-</div>
-<div className="flex-1 overflow-y-auto py-sm px-sm flex flex-col gap-xs">
-<Link className="flex items-center gap-md px-md py-sm rounded-DEFAULT text-on-primary dark:text-on-primary-fixed opacity-60 hover:opacity-100 hover:bg-on-primary-fixed-variant transition-all duration-200 ease-in-out font-title-sm text-sm" to="/dashboard">
-<span className="material-symbols-outlined">dashboard</span>
-                Admin Dashboard
-            </Link>
-<Link className="flex items-center gap-md px-md py-sm rounded-DEFAULT text-on-primary dark:text-on-primary-fixed border-l-2 border-secondary-fixed opacity-100 bg-on-primary-fixed-variant transition-all duration-200 ease-in-out font-title-sm text-sm" to="/students">
-<span className="material-symbols-outlined">group</span>
-                Student Directory
-            </Link>
-<Link className="flex items-center gap-md px-md py-sm rounded-DEFAULT text-on-primary dark:text-on-primary-fixed opacity-60 hover:opacity-100 hover:bg-on-primary-fixed-variant transition-all duration-200 ease-in-out font-title-sm text-sm" to="/fees">
-<span className="material-symbols-outlined">payments</span>
-                Fee Management
-            </Link>
-<Link className="flex items-center gap-md px-md py-sm rounded-DEFAULT text-on-primary dark:text-on-primary-fixed opacity-60 hover:opacity-100 hover:bg-on-primary-fixed-variant transition-all duration-200 ease-in-out font-title-sm text-sm" to="/academic">
-<span className="material-symbols-outlined">menu_book</span>
-                Academic Hub
-            </Link>
-<Link className="flex items-center gap-md px-md py-sm rounded-DEFAULT text-on-primary dark:text-on-primary-fixed opacity-60 hover:opacity-100 hover:bg-on-primary-fixed-variant transition-all duration-200 ease-in-out font-title-sm text-sm" to="/staff">
-<span className="material-symbols-outlined">badge</span>
-                Staff Directory
-            </Link>
-<Link className="flex items-center gap-md px-md py-sm rounded-DEFAULT text-on-primary dark:text-on-primary-fixed opacity-60 hover:opacity-100 hover:bg-on-primary-fixed-variant transition-all duration-200 ease-in-out font-title-sm text-sm" to="/portal">
-<span className="material-symbols-outlined">family_restroom</span>
-                Parent Portal
-            </Link>
-</div>
-<div className="mt-auto border-t border-surface-tint/20 py-sm px-sm flex flex-col gap-xs">
-<a className="flex items-center gap-md px-md py-sm rounded-DEFAULT text-on-primary dark:text-on-primary-fixed opacity-60 hover:opacity-100 hover:bg-on-primary-fixed-variant transition-all duration-200 ease-in-out font-title-sm text-sm" href="#">
-<span className="material-symbols-outlined">settings</span>
-                Settings
-            </a>
-<a className="flex items-center gap-md px-md py-sm rounded-DEFAULT text-on-primary dark:text-on-primary-fixed opacity-60 hover:opacity-100 hover:bg-on-primary-fixed-variant transition-all duration-200 ease-in-out font-title-sm text-sm" href="#">
-<span className="material-symbols-outlined">help</span>
-                Support
-            </a>
-</div>
-</nav>
+            {/* Subject Breakdown Progress Bars */}
+            <div className="space-y-4.5">
+              <p className="font-label-caps text-[10px] text-slate-400 font-bold uppercase tracking-wider">Active Subjects & Term Grades</p>
+              
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center text-xs font-semibold">
+                  <span className="text-slate-700">Advanced Calculus</span>
+                  <span className="text-indigo-600 font-bold">92%</span>
+                </div>
+                <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-indigo-600 rounded-full transition-all duration-300" style={{ width: '92%' }}></div>
+                </div>
+              </div>
 
-<main className="flex-1 md:ml-[260px] flex flex-col min-h-screen">
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center text-xs font-semibold">
+                  <span className="text-slate-700">AP Physics II</span>
+                  <span className="text-indigo-600 font-bold">88%</span>
+                </div>
+                <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-indigo-600 rounded-full transition-all duration-300" style={{ width: '88%' }}></div>
+                </div>
+              </div>
 
-<header className="flex justify-between items-center h-16 px-lg bg-surface dark:bg-surface-dim border-b border-outline-variant dark:border-outline sticky top-0 z-40">
-<div className="flex items-center gap-sm text-on-surface-variant md:hidden">
-<span className="material-symbols-outlined">menu</span>
-</div>
-<div className="flex-1 flex justify-start pl-md hidden md:flex">
-<div className="relative w-64">
-<span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
-<input className="w-full bg-surface-container-high dark:bg-surface-container-highest border-none rounded-full py-2 pl-10 pr-4 text-sm font-body-sm focus:ring-2 focus:ring-primary-fixed-dim outline-none transition-all duration-200 text-primary dark:text-primary-fixed-dim placeholder:text-on-surface-variant" placeholder="Search..." type="text"/>
-</div>
-</div>
-<div className="flex items-center gap-sm">
-<button className="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-all duration-150 scale-95 hover:scale-100">
-<span className="material-symbols-outlined">notifications</span>
-</button>
-<button className="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-all duration-150 scale-95 hover:scale-100">
-<span className="material-symbols-outlined">history</span>
-</button>
-<button className="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-all duration-150 scale-95 hover:scale-100 ml-sm">
-<span className="material-symbols-outlined text-[28px]">account_circle</span>
-</button>
-</div>
-</header>
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center text-xs font-semibold">
+                  <span className="text-slate-700">World History II</span>
+                  <span className="text-indigo-600 font-bold">95%</span>
+                </div>
+                <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-indigo-600 rounded-full transition-all duration-300" style={{ width: '95%' }}></div>
+                </div>
+              </div>
 
-<div className="p-lg lg:p-xl flex-1 flex flex-col gap-lg max-w-7xl mx-auto w-full">
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center text-xs font-semibold">
+                  <span className="text-slate-700">English Literature</span>
+                  <span className="text-indigo-600 font-bold">84%</span>
+                </div>
+                <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-indigo-600 rounded-full transition-all duration-300" style={{ width: '84%' }}></div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-<div className="bg-surface-container-lowest border border-outline-variant/50 rounded-lg p-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-lg">
-<div className="flex items-center gap-lg">
-<div className="w-24 h-24 rounded-full overflow-hidden border-2 border-surface-variant shrink-0 bg-surface-container-high">
-<img alt="Student Profile" className="w-full h-full object-cover" data-alt="A professional headshot of a confident young male student with short dark hair, wearing a crisp white button-down shirt. The background is a soft, blurred light grey, emphasizing the subject. The lighting is bright and even, typical of a modern corporate or academic portrait. The mood is serious yet approachable, fitting a formal school database profile." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCg6sm8wj36OTAYFywWXrq1V9zDBwiXvBXm2VrX1WOS1bxkGqfuQQkmSBdLF15cTX93s4VfMxU7iJs8mv2cTQV0Nfz57keRWDkKCezLdJB9OKvEbK6tGNTC8AMx0sfHrCVdmhac-Tn_VOiNNJTdfjNETnSntgeBMyYuMPR10jFKweUTiiENBchi5U35XO_2PwInzvXBX59SDc-R8HD6ZPAcxAEmbbdiy_ya6BN8ER_tcb9kYfndG2FfXQ3C-uvsp5IzUZT7NwIvhi8"/>
-</div>
-<div>
-<h2 className="font-display-lg text-[28px] text-on-surface mb-xs">Alexander Lewis</h2>
-<div className="flex flex-wrap gap-sm font-body-sm text-on-surface-variant">
-<span className="flex items-center gap-xs"><span className="material-symbols-outlined text-[16px]">badge</span> ID: STU-2023-0842</span>
-<span className="hidden md:inline text-outline-variant">•</span>
-<span className="flex items-center gap-xs"><span className="material-symbols-outlined text-[16px]">school</span> Grade 10 - Science</span>
-<span className="hidden md:inline text-outline-variant">•</span>
-<span className="flex items-center gap-xs px-2 py-1 rounded-full bg-[#14b8a6]/10 text-[#0f766e] text-[12px] font-bold tracking-wide">ACTIVE</span>
-</div>
-</div>
-</div>
-<div className="flex flex-wrap gap-sm w-full md:w-auto">
-<button className="flex-1 md:flex-none flex items-center justify-center gap-xs px-md py-sm rounded-DEFAULT bg-surface text-on-surface border border-outline-variant hover:bg-surface-container-high transition-colors font-title-sm text-sm">
-<span className="material-symbols-outlined text-[18px]">edit</span>
-                        Edit Profile
-                    </button>
-<button className="flex-1 md:flex-none flex items-center justify-center gap-xs px-md py-sm rounded-DEFAULT bg-surface text-on-surface border border-outline-variant hover:bg-surface-container-high transition-colors font-title-sm text-sm">
-<span className="material-symbols-outlined text-[18px]">print</span>
-                        Print Report
-                    </button>
-<button className="flex-1 md:flex-none flex items-center justify-center gap-xs px-md py-sm rounded-DEFAULT bg-primary text-on-primary hover:opacity-90 transition-opacity font-title-sm text-sm">
-<span className="material-symbols-outlined text-[18px]">mail</span>
-                        Message Parent
-                    </button>
-</div>
-</div>
+          {/* Attendance Radial ring Summary */}
+          <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-6">
+            <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+              <h3 className="font-title-sm text-base font-bold text-slate-900">Attendance summary</h3>
+              <button className="text-indigo-600 text-xs font-bold hover:underline">Inspect Log</button>
+            </div>
+            
+            <div className="flex flex-col md:flex-row items-center gap-8">
+              {/* Radial SVGs rings */}
+              <div className="relative w-28 h-28 flex items-center justify-center shrink-0">
+                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                  <path className="text-slate-100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="3"></path>
+                  <path className="text-emerald-500" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeDasharray="96, 100" strokeWidth="3" strokeLinecap="round"></path>
+                </svg>
+                <div className="absolute flex flex-col items-center justify-center select-none">
+                  <span className="font-display-lg text-lg font-bold text-slate-900">96%</span>
+                  <span className="font-label-caps text-[8px] text-slate-400 font-bold uppercase">PRESENT</span>
+                </div>
+              </div>
 
-<div className="grid grid-cols-1 lg:grid-cols-3 gap-lg">
-
-<div className="flex flex-col gap-lg">
-
-<div className="bg-surface-container-lowest border border-outline-variant/50 rounded-lg p-lg">
-<h3 className="font-title-sm text-on-surface mb-md pb-sm border-b border-surface-variant">Personal Information</h3>
-<div className="flex flex-col gap-md">
-<div>
-<p className="font-label-caps text-on-surface-variant mb-xs">DATE OF BIRTH</p>
-<p className="font-body-md text-on-surface">March 14, 2008 (16 yrs)</p>
-</div>
-<div>
-<p className="font-label-caps text-on-surface-variant mb-xs">GENDER</p>
-<p className="font-body-md text-on-surface">Male</p>
-</div>
-<div>
-<p className="font-label-caps text-on-surface-variant mb-xs">CONTACT</p>
-<p className="font-body-md text-on-surface">alewis.student@educore.edu</p>
-<p className="font-body-md text-on-surface mt-xs">+1 (555) 019-8372</p>
-</div>
-<div>
-<p className="font-label-caps text-on-surface-variant mb-xs">ADDRESS</p>
-<p className="font-body-md text-on-surface">482 Oakwood Drive, Apt 3B<br/>Springfield, IL 62704</p>
-</div>
-</div>
-</div>
-
-<div className="bg-surface-container-lowest border border-outline-variant/50 rounded-lg p-lg">
-<div className="flex justify-between items-center mb-md pb-sm border-b border-surface-variant">
-<h3 className="font-title-sm text-on-surface">Fee Status</h3>
-<span className="px-2 py-1 rounded-full bg-[#14b8a6]/10 text-[#0f766e] font-label-caps text-[10px]">UP TO DATE</span>
-</div>
-<div className="mb-md">
-<p className="font-label-caps text-on-surface-variant mb-xs">CURRENT BALANCE</p>
-<p className="font-display-lg text-on-surface">$0.00</p>
-</div>
-<div className="flex flex-col gap-xs">
-<p className="font-label-caps text-on-surface-variant mb-xs">RECENT PAYMENTS</p>
-<div className="flex justify-between items-center text-sm font-table-data">
-<span className="text-on-surface">Fall Semester Tuition</span>
-<span className="text-on-surface-variant">$4,200.00</span>
-</div>
-<div className="flex justify-between items-center text-sm font-table-data">
-<span className="text-on-surface">Lab Fees (Science)</span>
-<span className="text-on-surface-variant">$150.00</span>
-</div>
-</div>
-</div>
-</div>
-
-<div className="lg:col-span-2 flex flex-col gap-lg">
-
-<div className="bg-surface-container-lowest border border-outline-variant/50 rounded-lg p-lg">
-<h3 className="font-title-sm text-on-surface mb-md pb-sm border-b border-surface-variant">Academic Overview</h3>
-<div className="grid grid-cols-2 md:grid-cols-4 gap-md mb-lg">
-<div className="p-md bg-surface rounded-DEFAULT border border-outline-variant/30 text-center">
-<p className="font-label-caps text-on-surface-variant mb-xs">CURRENT GPA</p>
-<p className="font-headline-md text-primary">3.84</p>
-</div>
-<div className="p-md bg-surface rounded-DEFAULT border border-outline-variant/30 text-center">
-<p className="font-label-caps text-on-surface-variant mb-xs">CLASS RANK</p>
-<p className="font-headline-md text-primary">12 <span className="text-sm font-body-sm text-on-surface-variant font-normal">/ 340</span></p>
-</div>
-<div className="p-md bg-surface rounded-DEFAULT border border-outline-variant/30 text-center">
-<p className="font-label-caps text-on-surface-variant mb-xs">TOTAL CREDITS</p>
-<p className="font-headline-md text-primary">42.5</p>
-</div>
-<div className="p-md bg-surface rounded-DEFAULT border border-outline-variant/30 text-center">
-<p className="font-label-caps text-on-surface-variant mb-xs">CONDUCT</p>
-<p className="font-headline-md text-[#0f766e]">Excellent</p>
-</div>
-</div>
-
-<div className="flex flex-col gap-md">
-<p className="font-label-caps text-on-surface-variant">CURRENT TERM SUBJECTS</p>
-<div className="flex items-center gap-md">
-<span className="font-table-data text-on-surface w-32 shrink-0">Adv. Calculus</span>
-<div className="flex-1 h-2 bg-surface-container-high rounded-full overflow-hidden">
-<div className="h-full bg-primary" style={{'width': "92%"}}></div>
-</div>
-<span className="font-title-sm text-on-surface w-8 text-right">92%</span>
-</div>
-<div className="flex items-center gap-md">
-<span className="font-table-data text-on-surface w-32 shrink-0">AP Physics</span>
-<div className="flex-1 h-2 bg-surface-container-high rounded-full overflow-hidden">
-<div className="h-full bg-primary" style={{'width': "88%"}}></div>
-</div>
-<span className="font-title-sm text-on-surface w-8 text-right">88%</span>
-</div>
-<div className="flex items-center gap-md">
-<span className="font-table-data text-on-surface w-32 shrink-0">World History</span>
-<div className="flex-1 h-2 bg-surface-container-high rounded-full overflow-hidden">
-<div className="h-full bg-primary" style={{'width': "95%"}}></div>
-</div>
-<span className="font-title-sm text-on-surface w-8 text-right">95%</span>
-</div>
-<div className="flex items-center gap-md">
-<span className="font-table-data text-on-surface w-32 shrink-0">English Lit</span>
-<div className="flex-1 h-2 bg-surface-container-high rounded-full overflow-hidden">
-<div className="h-full bg-primary" style={{'width': "84%"}}></div>
-</div>
-<span className="font-title-sm text-on-surface w-8 text-right">84%</span>
-</div>
-</div>
-</div>
-
-<div className="bg-surface-container-lowest border border-outline-variant/50 rounded-lg p-lg">
-<div className="flex justify-between items-center mb-md pb-sm border-b border-surface-variant">
-<h3 className="font-title-sm text-on-surface">Attendance Summary</h3>
-<button className="text-primary text-sm font-title-sm hover:underline">View Log</button>
-</div>
-<div className="flex flex-col md:flex-row items-center gap-lg">
-
-<div className="relative w-32 h-32 flex items-center justify-center shrink-0">
-<svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-<path className="text-surface-container-high" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3"></path>
-<path className="text-[#0f766e]" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="96, 100" stroke-width="3"></path>
-</svg>
-<div className="absolute flex flex-col items-center justify-center">
-<span className="font-headline-md text-on-surface">96%</span>
-<span className="font-label-caps text-on-surface-variant text-[10px]">PRESENT</span>
-</div>
-</div>
-<div className="flex-1 w-full grid grid-cols-2 gap-sm">
-<div className="p-sm bg-surface rounded-DEFAULT border border-outline-variant/30">
-<p className="font-label-caps text-on-surface-variant mb-xs">TOTAL DAYS</p>
-<p className="font-title-sm text-on-surface">142</p>
-</div>
-<div className="p-sm bg-surface rounded-DEFAULT border border-outline-variant/30">
-<p className="font-label-caps text-on-surface-variant mb-xs">PRESENT</p>
-<p className="font-title-sm text-on-surface">136</p>
-</div>
-<div className="p-sm bg-surface rounded-DEFAULT border border-outline-variant/30">
-<p className="font-label-caps text-on-surface-variant mb-xs">ABSENT (EXCUSED)</p>
-<p className="font-title-sm text-on-surface">4</p>
-</div>
-<div className="p-sm bg-surface rounded-DEFAULT border border-outline-variant/30">
-<p className="font-label-caps text-on-surface-variant mb-xs">ABSENT (UNEXCUSED)</p>
-<p className="font-title-sm text-error">2</p>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</main>
-
-        </>
-    );
+              {/* Attendance breakdowns */}
+              <div className="flex-1 w-full grid grid-cols-2 gap-3.5 text-xs">
+                <div className="p-3 bg-slate-50 border border-slate-200/45 rounded-xl">
+                  <p className="font-label-caps text-[9px] text-slate-400 font-bold mb-1">TOTAL DAYS</p>
+                  <p className="font-semibold text-slate-800 text-sm">142</p>
+                </div>
+                <div className="p-3 bg-slate-50 border border-slate-200/45 rounded-xl">
+                  <p className="font-label-caps text-[9px] text-slate-400 font-bold mb-1">DAYS PRESENT</p>
+                  <p className="font-semibold text-slate-800 text-sm">136</p>
+                </div>
+                <div className="p-3 bg-slate-50 border border-slate-200/45 rounded-xl">
+                  <p className="font-label-caps text-[9px] text-slate-400 font-bold mb-1">ABSENT (EXCUSED)</p>
+                  <p className="font-semibold text-slate-800 text-sm">4</p>
+                </div>
+                <div className="p-3 bg-slate-50 border border-slate-200/45 rounded-xl">
+                  <p className="font-label-caps text-[9px] text-slate-400 font-bold mb-1">ABSENT (UNEXCUSED)</p>
+                  <p className="font-semibold text-rose-600 text-sm">2</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
