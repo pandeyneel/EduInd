@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { fetchBackendData } from '../api';
+import { useApi } from '../api';
+import BackendStatusBanner from '../components/BackendStatusBanner';
 import {
   Search,
   UserPlus,
@@ -14,14 +15,16 @@ import {
   Edit2
 } from 'lucide-react';
 
-export default function StudentDirectory() {
-  const [_data, setData] = useState<any>(null);
-  const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
+interface StudentData {
+  Message: string;
+}
 
-  useEffect(() => {
-    // Connect to .NET backend
-    fetchBackendData('StudentDirectory').then(setData).catch(console.error);
-  }, []);
+export default function StudentDirectory() {
+  const { loading, retry, isFallback } = useApi<StudentData>('StudentDirectory', {
+    Message: "Data for Student Directory"
+  });
+
+  const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
 
   const studentsList = [
     { id: 1, name: 'Alexander Lewis', code: 'AL', grade: 'Grade 10', section: 'A', roll: '2023-1042', status: 'Enrolled' },
@@ -32,28 +35,32 @@ export default function StudentDirectory() {
   ];
 
   return (
-    <div className="p-8 space-y-8 max-w-[1600px] mx-auto">
+    <div className="p-4 sm:p-8 space-y-6 sm:space-y-8 max-w-[1600px] mx-auto animate-in fade-in duration-200">
+      
+      {/* Backend Status Alert */}
+      <BackendStatusBanner isFallback={isFallback} loading={loading} retry={retry} />
+
       {/* Header Controls */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="font-display-lg text-2xl font-bold text-slate-900 tracking-tight leading-none">
+          <h1 className="font-display-lg text-xl sm:text-2xl font-bold text-slate-900 tracking-tight leading-none">
             Student Register
           </h1>
-          <p className="font-body-sm text-sm text-slate-400 mt-1.5 font-medium">
+          <p className="font-body-sm text-xs sm:text-sm text-slate-400 mt-1.5 font-medium">
             Browse, filter, and inspect enrolled student profiles across grades and terms.
           </p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-title-sm text-xs font-semibold rounded-xl shadow-md shadow-indigo-100 transition-all duration-200">
+        <button className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-title-sm text-xs font-semibold rounded-xl shadow-md shadow-indigo-150/10 hover:shadow-indigo-150/20 active:scale-95 transition-all duration-200 w-full sm:w-auto">
           <UserPlus className="w-4 h-4" />
-          Add Student
+          <span>Add Student</span>
         </button>
       </div>
 
       {/* Advanced Filter Inputs Container */}
-      <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm flex flex-col md:flex-row gap-4 items-end">
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col md:flex-row gap-4 items-end">
         {/* Search */}
         <div className="flex-1 w-full space-y-1.5">
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Search Students</label>
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Search Students</label>
           <div className="relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
@@ -66,7 +73,7 @@ export default function StudentDirectory() {
 
         {/* Grade Selector */}
         <div className="w-full md:w-48 space-y-1.5">
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Grade Level</label>
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Grade Level</label>
           <div className="relative">
             <select className="w-full pl-4 pr-10 py-2 bg-slate-50 border border-slate-200 rounded-xl font-body-sm text-xs focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-slate-700 transition-all appearance-none cursor-pointer">
               <option value="">All Grades</option>
@@ -81,7 +88,7 @@ export default function StudentDirectory() {
 
         {/* Section Selector */}
         <div className="w-full md:w-48 space-y-1.5">
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Section</label>
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Section</label>
           <div className="relative">
             <select className="w-full pl-4 pr-10 py-2 bg-slate-50 border border-slate-200 rounded-xl font-body-sm text-xs focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-slate-700 transition-all appearance-none cursor-pointer">
               <option value="">All Sections</option>
@@ -94,8 +101,8 @@ export default function StudentDirectory() {
         </div>
 
         {/* Sliders / Advanced Filters Button */}
-        <button className="flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-600 font-semibold text-xs transition-colors shrink-0 h-[38px] w-full md:w-auto">
-          <SlidersHorizontal className="w-4 h-4" />
+        <button className="flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-600 font-semibold text-xs transition-colors shrink-0 h-[38px] w-full md:w-auto bg-white">
+          <SlidersHorizontal className="w-4 h-4 text-slate-400" />
           <span>More Filters</span>
         </button>
       </div>
@@ -103,7 +110,7 @@ export default function StudentDirectory() {
       {/* Main Student Directory Table Card */}
       <div className="bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden flex flex-col">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse min-w-[800px]">
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50/50">
                 <th className="px-6 py-4 font-label-caps text-[10px] text-slate-400 uppercase tracking-wider">Student Name</th>
@@ -143,7 +150,7 @@ export default function StudentDirectory() {
                           {stu.code}
                         </div>
                         <Link
-                          to="/students/detail"
+                          to="/student-directory/detail"
                           className="font-semibold text-slate-900 hover:text-indigo-600 transition-colors font-title-sm text-sm"
                         >
                           {stu.name}
@@ -170,7 +177,7 @@ export default function StudentDirectory() {
                           ></div>
                           <div className="absolute right-6 mt-1 w-36 bg-white border border-slate-200 rounded-xl shadow-lg py-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150 text-left">
                             <Link
-                              to="/students/detail"
+                              to="/student-directory/detail"
                               className="flex items-center gap-2 px-3 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50"
                             >
                               <Eye className="w-3.5 h-3.5 text-slate-400" />
@@ -203,7 +210,7 @@ export default function StudentDirectory() {
         </div>
 
         {/* Table Footer with Pagination links */}
-        <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between select-none">
+        <div className="px-6 py-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 select-none bg-white">
           <span className="font-body-sm text-xs text-slate-400 font-medium">
             Showing 1 to 5 of 248 register entries
           </span>
@@ -214,14 +221,14 @@ export default function StudentDirectory() {
             <button className="w-8 h-8 rounded-lg bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shadow-sm shadow-indigo-100">
               1
             </button>
-            <button className="w-8 h-8 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors font-bold text-xs flex items-center justify-center">
+            <button className="w-8 h-8 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors font-bold text-xs flex items-center justify-center bg-white">
               2
             </button>
-            <button className="w-8 h-8 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors font-bold text-xs flex items-center justify-center">
+            <button className="w-8 h-8 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors font-bold text-xs flex items-center justify-center bg-white">
               3
             </button>
             <span className="text-slate-400 px-1 font-bold text-xs">...</span>
-            <button className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
+            <button className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors bg-white">
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>

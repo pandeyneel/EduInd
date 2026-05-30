@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { fetchBackendData } from '../api';
+import { useApi } from '../api';
+import BackendStatusBanner from '../components/BackendStatusBanner';
 import {
   Printer,
   CalendarDays,
@@ -13,40 +13,45 @@ import {
   FileCheck2
 } from 'lucide-react';
 
-export default function AcademicHub() {
-  const [_data, setData] = useState<any>(null);
+interface AcademicData {
+  Message: string;
+}
 
-  useEffect(() => {
-    // Connect to .NET backend
-    fetchBackendData('AcademicHub').then(setData).catch(console.error);
-  }, []);
+export default function AcademicHub() {
+  const { loading, retry, isFallback } = useApi<AcademicData>('AcademicHub', {
+    Message: "Data for Academic Hub"
+  });
 
   return (
-    <div className="p-8 space-y-8 max-w-[1600px] mx-auto">
+    <div className="p-4 sm:p-8 space-y-6 sm:space-y-8 max-w-[1600px] mx-auto animate-in fade-in duration-200">
+      
+      {/* Backend Status Alert */}
+      <BackendStatusBanner isFallback={isFallback} loading={loading} retry={retry} />
+
       {/* Page Title Panel */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="font-display-lg text-2xl font-bold text-slate-900 tracking-tight leading-none">
+          <h1 className="font-display-lg text-xl sm:text-2xl font-bold text-slate-900 tracking-tight leading-none">
             Academics Hub
           </h1>
-          <p className="font-body-sm text-sm text-slate-400 mt-1.5 font-medium">
+          <p className="font-body-sm text-xs sm:text-sm text-slate-400 mt-1.5 font-medium">
             Manage course guides, timetable distributions, and assessment calendars.
           </p>
         </div>
-        <div className="flex gap-2.5">
-          <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs rounded-xl transition-all">
+        <div className="flex gap-2.5 w-full sm:w-auto">
+          <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs rounded-xl transition-all bg-white">
             <Printer className="w-4 h-4 text-slate-400" />
-            Print Schedule
+            <span>Print Schedule</span>
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-title-sm text-xs font-semibold rounded-xl shadow-md shadow-indigo-100 transition-all duration-200">
+          <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-title-sm text-xs font-semibold rounded-xl shadow-md shadow-indigo-150/10 hover:shadow-indigo-150/20 active:scale-95 transition-all duration-200">
             <CalendarDays className="w-4 h-4" />
-            Edit Term Settings
+            <span>Edit Term Settings</span>
           </button>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-200">
+      <div className="flex border-b border-slate-200 select-none">
         <button className="px-5 py-3 font-semibold text-xs text-indigo-600 border-b-2 border-indigo-600 translate-y-px">
           Class Timetable
         </button>
@@ -56,7 +61,7 @@ export default function AcademicHub() {
       </div>
 
       {/* Main Grid: Weekly Calendar & Exam Tracker */}
-      <div className="grid grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-12 gap-6 sm:gap-8 items-start">
         
         {/* Weekly Timetable Sheet */}
         <div className="col-span-12 xl:col-span-8 bg-white border border-slate-200/80 rounded-2xl shadow-sm flex flex-col overflow-hidden">
@@ -77,11 +82,11 @@ export default function AcademicHub() {
             </div>
             
             <div className="flex items-center gap-1">
-              <button className="p-1.5 rounded-lg border border-slate-200 text-slate-400 hover:bg-slate-50 transition-colors">
+              <button className="p-1.5 rounded-lg border border-slate-200 text-slate-400 hover:bg-slate-50 transition-colors bg-white">
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <span className="font-body-sm text-xs font-bold text-slate-700 min-w-[100px] text-center">Oct 14 - Oct 18</span>
-              <button className="p-1.5 rounded-lg border border-slate-200 text-slate-400 hover:bg-slate-50 transition-colors">
+              <button className="p-1.5 rounded-lg border border-slate-200 text-slate-400 hover:bg-slate-50 transition-colors bg-white">
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -191,7 +196,7 @@ export default function AcademicHub() {
                 {/* Lunch Row */}
                 <tr className="bg-slate-50">
                   <td className="p-2.5 border-r border-slate-100 text-center text-slate-400 font-bold text-[10px] tracking-wider uppercase select-none">11:00 AM</td>
-                  <td className="p-2.5 text-center font-bold text-[10px] text-slate-400 tracking-widest select-none uppercase" colSpan={5}>
+                  <td className="p-2.5 text-center font-bold text-[10px] text-slate-400 tracking-widest select-none uppercase bg-slate-50" colSpan={5}>
                     LUNCH BREAK
                   </td>
                 </tr>
@@ -254,7 +259,7 @@ export default function AcademicHub() {
             
             <div className="p-5 space-y-4 overflow-y-auto">
               {/* Mathematics Card */}
-              <div className="flex gap-4 p-4 border border-slate-200/60 rounded-2xl bg-white hover:border-slate-300 transition-all cursor-pointer group">
+              <div className="flex gap-4 p-4 border border-slate-200/60 rounded-2xl bg-white hover:border-slate-350 transition-all cursor-pointer group">
                 <div className="flex flex-col items-center justify-center bg-indigo-50 text-indigo-600 rounded-xl px-3 py-1.5 min-w-[55px] select-none border border-indigo-100">
                   <span className="text-[9px] font-bold leading-none uppercase">OCT</span>
                   <span className="text-base font-extrabold leading-none mt-1">21</span>
@@ -269,7 +274,7 @@ export default function AcademicHub() {
               </div>
 
               {/* Physics Card */}
-              <div className="flex gap-4 p-4 border border-slate-200/60 rounded-2xl bg-white hover:border-slate-300 transition-all cursor-pointer group">
+              <div className="flex gap-4 p-4 border border-slate-200/60 rounded-2xl bg-white hover:border-slate-350 transition-all cursor-pointer group">
                 <div className="flex flex-col items-center justify-center bg-blue-50 text-blue-600 rounded-xl px-3 py-1.5 min-w-[55px] select-none border border-blue-100">
                   <span className="text-[9px] font-bold leading-none uppercase">OCT</span>
                   <span className="text-base font-extrabold leading-none mt-1">23</span>
@@ -284,7 +289,7 @@ export default function AcademicHub() {
               </div>
 
               {/* Literature Card */}
-              <div className="flex gap-4 p-4 border border-slate-200/60 rounded-2xl bg-white hover:border-slate-300 transition-all cursor-pointer group">
+              <div className="flex gap-4 p-4 border border-slate-200/60 rounded-2xl bg-white hover:border-slate-350 transition-all cursor-pointer group">
                 <div className="flex flex-col items-center justify-center bg-amber-50 text-amber-600 rounded-xl px-3 py-1.5 min-w-[55px] select-none border border-amber-100">
                   <span className="text-[9px] font-bold leading-none uppercase">NOV</span>
                   <span className="text-base font-extrabold leading-none mt-1">05</span>
@@ -293,7 +298,7 @@ export default function AcademicHub() {
                   <span className="font-semibold text-slate-800 truncate text-sm">Literature Essay Due</span>
                   <div className="flex items-center gap-3 mt-1.5 text-slate-400 font-medium text-[10px]">
                     <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> 05:00 PM</span>
-                    <span className="flex items-center gap-1"><UploadCloud className="w-3.5 h-3.5" /> Online portal</span>
+                    <span className="flex items-center gap-1"><UploadCloud className="w-3.5 h-3.5" /> Online Portal</span>
                   </div>
                 </div>
               </div>
@@ -302,7 +307,7 @@ export default function AcademicHub() {
             <div className="p-5 border-t border-slate-100 bg-slate-50 mt-auto">
               <button className="w-full py-2 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm">
                 <Plus className="w-4 h-4 text-slate-400" />
-                Schedule Assessment
+                <span>Schedule Assessment</span>
               </button>
             </div>
           </div>

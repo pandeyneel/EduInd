@@ -7,11 +7,16 @@ import {
   History,
   Command,
   HelpCircle,
-  Settings
+  Settings,
+  Menu
 } from 'lucide-react';
 import { useState } from 'react';
 
-export default function Header() {
+interface HeaderProps {
+  onMenuToggle: () => void;
+}
+
+export default function Header({ onMenuToggle }: HeaderProps) {
   const location = useLocation();
   const currentPath = location.pathname;
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -24,32 +29,32 @@ export default function Header() {
           title: 'Overview',
           subtitle: 'Good Morning, Admin. Today\'s snapshot of system performance.'
         };
-      case '/students':
+      case '/student-directory':
         return {
           title: 'Student Directory',
           subtitle: 'View and manage all registered student profiles.'
         };
-      case '/students/detail':
+      case '/student-directory/detail':
         return {
           title: 'Student Profile',
           subtitle: 'Detailed academic record and performance analysis.'
         };
-      case '/staff':
+      case '/staff-directory':
         return {
           title: 'Staff Directory',
           subtitle: 'Manage teachers, instructors, and administrator logs.'
         };
-      case '/academic':
+      case '/academic-hub':
         return {
           title: 'Academic Hub',
           subtitle: 'Configure courses, active curriculum terms, and class timetables.'
         };
-      case '/fees':
+      case '/fee-management':
         return {
           title: 'Fee Management',
           subtitle: 'Outstanding collections, billing statistics, and transaction ledgers.'
         };
-      case '/portal':
+      case '/parent-portal':
         return {
           title: 'Parent Portal',
           subtitle: 'Academic checkups, homework deadlines, and classroom notices.'
@@ -65,35 +70,45 @@ export default function Header() {
   const headerInfo = getHeaderInfo();
 
   return (
-    <header className="sticky top-0 h-16 bg-white/80 backdrop-blur-md border-b border-slate-200/80 flex items-center justify-between px-8 z-30 shrink-0">
-      {/* Page Title & Greeting */}
-      <div className="flex flex-col">
-        <h2 className="font-display-lg text-lg font-bold text-slate-900 tracking-tight leading-none">
-          {headerInfo.title}
-        </h2>
-        <p className="font-body-sm text-xs text-slate-400 font-medium mt-1 select-none">
-          {headerInfo.subtitle}
-        </p>
+    <header className="sticky top-0 h-16 bg-white/80 backdrop-blur-md border-b border-slate-200/80 flex items-center justify-between px-4 sm:px-8 z-30 shrink-0">
+      {/* Page Title & Hamburger Grid */}
+      <div className="flex items-center gap-3">
+        {/* Responsive Hamburger Toggle */}
+        <button
+          onClick={onMenuToggle}
+          className="lg:hidden p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100/85 rounded-xl transition-all outline-none"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+
+        <div className="flex flex-col">
+          <h2 className="font-display-lg text-base sm:text-lg font-bold text-slate-900 tracking-tight leading-none">
+            {headerInfo.title}
+          </h2>
+          <p className="font-body-sm text-[10px] sm:text-xs text-slate-400 font-medium mt-1 select-none hidden sm:block">
+            {headerInfo.subtitle}
+          </p>
+        </div>
       </div>
 
       {/* Global Controls */}
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-4 sm:gap-6">
         {/* Sleek Search */}
-        <div className="relative w-64 hidden sm:block">
+        <div className="relative w-48 xl:w-64 hidden md:block">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
             type="text"
             placeholder="Search console..."
             className="w-full pl-10 pr-12 py-1.5 bg-slate-50 border border-slate-200 rounded-xl font-body-sm text-xs focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-slate-800 transition-all placeholder:text-slate-400"
           />
-          <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-slate-200/50 text-[9px] font-bold text-slate-400 border border-slate-200">
+          <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-slate-200/50 text-[9px] font-bold text-slate-400 border border-slate-200 select-none pointer-events-none">
             <Command className="w-2.5 h-2.5" />
             <span>K</span>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           {/* Notifications */}
           <button className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100/80 transition-all relative">
             <Bell className="w-[18px] h-[18px]" />
@@ -107,7 +122,7 @@ export default function Header() {
           </button>
 
           {/* History / Audit Log */}
-          <button className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100/80 transition-all">
+          <button className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100/80 transition-all hidden sm:flex">
             <History className="w-[18px] h-[18px]" />
           </button>
         </div>

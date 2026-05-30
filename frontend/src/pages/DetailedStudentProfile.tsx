@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { fetchBackendData } from '../api';
+import { useApi } from '../api';
+import BackendStatusBanner from '../components/BackendStatusBanner';
 import {
   IdCard,
   GraduationCap,
@@ -16,33 +16,38 @@ import {
   CheckCircle2
 } from 'lucide-react';
 
-export default function DetailedStudentProfile() {
-  const [_data, setData] = useState<any>(null);
+interface ProfileData {
+  Message: string;
+}
 
-  useEffect(() => {
-    // Connect to .NET backend
-    fetchBackendData('DetailedStudentProfile').then(setData).catch(console.error);
-  }, []);
+export default function DetailedStudentProfile() {
+  const { loading, retry, isFallback } = useApi<ProfileData>('DetailedStudentProfile', {
+    Message: "Data for Detailed Student Profile"
+  });
 
   return (
-    <div className="p-8 space-y-8 max-w-[1600px] mx-auto">
+    <div className="p-4 sm:p-8 space-y-6 sm:space-y-8 max-w-[1600px] mx-auto animate-in fade-in duration-200">
+      
+      {/* Backend Status Alert */}
+      <BackendStatusBanner isFallback={isFallback} loading={loading} retry={retry} />
+
       {/* Top Profile Header Sheet */}
-      <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6 hover:border-slate-300 transition-all">
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6 hover:border-slate-350 transition-all">
         <div className="flex items-center gap-6">
           {/* Avatar Container */}
           <div className="relative">
-            <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-indigo-100 shadow-inner shrink-0 bg-slate-50 flex items-center justify-center">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 border-indigo-100 shadow-inner shrink-0 bg-slate-50 flex items-center justify-center">
               <img
                 alt="Student Profile"
                 className="w-full h-full object-cover"
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuCg6sm8wj36OTAYFywWXrq1V9zDBwiXvBXm2VrX1WOS1bxkGqfuQQkmSBdLF15cTX93s4VfMxU7iJs8mv2cTQV0Nfz57keRWDkKCezLdJB9OKvEbK6tGNTC8AMx0sfHrCVdmhac-Tn_VOiNNJTdfjNETnSntgeBMyYuMPR10jFKweUTiiENBchi5U35XO_2PwInzvXBX59SDc-R8HD6ZPAcxAEmbbdiy_ya6BN8ER_tcb9kYfndG2FfXQ3C-uvsp5IzUZT7NwIvhi8"
               />
             </div>
-            <span className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white" />
+            <span className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white" />
           </div>
           <div>
-            <h2 className="font-display-lg text-xl font-bold text-slate-900 leading-tight">Alexander Lewis</h2>
-            <div className="flex flex-wrap gap-x-4 gap-y-2 mt-2 font-body-sm text-slate-400 text-xs font-semibold">
+            <h2 className="font-display-lg text-lg sm:text-xl font-bold text-slate-900 leading-tight">Alexander Lewis</h2>
+            <div className="flex flex-wrap gap-x-4 gap-y-2 mt-2 font-body-sm text-slate-400 text-[11px] sm:text-xs font-semibold">
               <span className="flex items-center gap-1.5"><IdCard className="w-4 h-4 text-slate-400" /> ID: STU-2023-0842</span>
               <span className="hidden md:inline text-slate-200">•</span>
               <span className="flex items-center gap-1.5"><GraduationCap className="w-4 h-4 text-slate-400" /> Grade 10 - Science Track</span>
@@ -54,26 +59,26 @@ export default function DetailedStudentProfile() {
 
         {/* Dynamic Action Buttons */}
         <div className="flex flex-wrap gap-2.5 w-full md:w-auto shrink-0">
-          <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs rounded-xl transition-all">
+          <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs rounded-xl transition-all bg-white">
             <Edit2 className="w-4 h-4 text-slate-400" />
-            Edit Profile
+            <span>Edit Profile</span>
           </button>
-          <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs rounded-xl transition-all">
+          <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs rounded-xl transition-all bg-white">
             <Printer className="w-4 h-4 text-slate-400" />
-            Print Docket
+            <span>Print Docket</span>
           </button>
-          <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-title-sm text-xs font-semibold rounded-xl shadow-md shadow-indigo-100 transition-all duration-200">
+          <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-title-sm text-xs font-semibold rounded-xl shadow-md shadow-indigo-150/10 hover:shadow-indigo-150/20 active:scale-95 transition-all duration-200">
             <Mail className="w-4 h-4" />
-            Message Family
+            <span>Message Family</span>
           </button>
         </div>
       </div>
 
       {/* Structured Multi-Panel Layout Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
         
         {/* Left Column: Personal Metadata */}
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-6 sm:gap-8">
           {/* Metadata Card */}
           <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-6">
             <h3 className="font-title-sm text-base font-bold text-slate-900 pb-3 border-b border-slate-100">
@@ -142,7 +147,7 @@ export default function DetailedStudentProfile() {
         </div>
 
         {/* Right Columns: Academics & Timetables */}
-        <div className="lg:col-span-2 flex flex-col gap-8">
+        <div className="lg:col-span-2 flex flex-col gap-6 sm:gap-8">
           {/* Academic Stats & Subject List */}
           <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-6">
             <h3 className="font-title-sm text-base font-bold text-slate-900 pb-3 border-b border-slate-100">
@@ -150,27 +155,27 @@ export default function DetailedStudentProfile() {
             </h3>
             
             {/* KPI Metrics */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div className="p-4 bg-slate-50 border border-slate-200/50 rounded-xl text-center flex flex-col justify-center">
                 <p className="font-label-caps text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-1">CURRENT GPA</p>
-                <p className="font-display-lg text-lg font-bold text-indigo-600 flex items-center justify-center gap-1">
-                  3.84 <Sparkles className="w-4 h-4 text-amber-500" />
+                <p className="font-display-lg text-base sm:text-lg font-bold text-indigo-600 flex items-center justify-center gap-1">
+                  3.84 <Sparkles className="w-4 h-4 text-amber-500 animate-pulse" />
                 </p>
               </div>
               <div className="p-4 bg-slate-50 border border-slate-200/50 rounded-xl text-center flex flex-col justify-center">
                 <p className="font-label-caps text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-1">CLASS RANK</p>
-                <p className="font-display-lg text-lg font-bold text-indigo-600 flex items-center justify-center gap-1">
+                <p className="font-display-lg text-base sm:text-lg font-bold text-indigo-600 flex items-center justify-center gap-1">
                   12 <Trophy className="w-3.5 h-3.5 text-amber-500" />
                   <span className="text-[10px] text-slate-400 font-normal">/340</span>
                 </p>
               </div>
               <div className="p-4 bg-slate-50 border border-slate-200/50 rounded-xl text-center flex flex-col justify-center">
                 <p className="font-label-caps text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-1">CREDITS EARNED</p>
-                <p className="font-display-lg text-lg font-bold text-indigo-600">42.5</p>
+                <p className="font-display-lg text-base sm:text-lg font-bold text-indigo-600">42.5</p>
               </div>
               <div className="p-4 bg-slate-50 border border-slate-200/50 rounded-xl text-center flex flex-col justify-center">
                 <p className="font-label-caps text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-1">CONDUCT RATING</p>
-                <p className="font-display-lg text-lg font-bold text-emerald-600 flex items-center justify-center gap-1">
+                <p className="font-display-lg text-base sm:text-lg font-bold text-emerald-600 flex items-center justify-center gap-1">
                   Excellent <CheckCircle2 className="w-3.5 h-3.5" />
                 </p>
               </div>
@@ -225,11 +230,11 @@ export default function DetailedStudentProfile() {
           {/* Attendance Radial ring Summary */}
           <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-6">
             <div className="flex justify-between items-center pb-3 border-b border-slate-100">
-              <h3 className="font-title-sm text-base font-bold text-slate-900">Attendance summary</h3>
+              <h3 className="font-title-sm text-base font-bold text-slate-900">Attendance Summary</h3>
               <button className="text-indigo-600 text-xs font-bold hover:underline">Inspect Log</button>
             </div>
             
-            <div className="flex flex-col md:flex-row items-center gap-8">
+            <div className="flex flex-col sm:flex-row items-center gap-8">
               {/* Radial SVGs rings */}
               <div className="relative w-28 h-28 flex items-center justify-center shrink-0">
                 <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
