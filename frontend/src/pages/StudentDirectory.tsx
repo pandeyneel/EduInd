@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useApi } from '../api';
+import { useApi, sendBackendRequest } from '../api';
 import BackendStatusBanner from '../components/BackendStatusBanner';
 import {
   Search,
@@ -44,6 +44,102 @@ export default function StudentDirectory() {
 
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
+  // Add Student Modal & Feedback States
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  
+  const [formValues, setFormValues] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    grade: '',
+    admissionDate: new Date().toISOString().substring(0, 10)
+  });
+
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormValues(prev => ({ ...prev, [name]: value }));
+    // Clear validation error on type
+    if (errors[name]) {
+      setErrors(prev => {
+        const copy = { ...prev };
+        delete copy[name];
+        return copy;
+      });
+    }
+    setFormError(null);
+  };
+
+  const validateForm = () => {
+    const newErrors: { [key: string]: string } = {};
+    if (!formValues.firstName.trim()) newErrors.firstName = 'First name is required.';
+    if (!formValues.lastName.trim()) newErrors.lastName = 'Last name is required.';
+    
+    if (!formValues.email.trim()) {
+      newErrors.email = 'Email is required.';
+    } else if (!/\S+@\S+\.\S+/.test(formValues.email)) {
+      newErrors.email = 'Please enter a valid email address.';
+    }
+    
+    if (!formValues.grade) newErrors.grade = 'Please select a grade level.';
+    if (!formValues.admissionDate) newErrors.admissionDate = 'Admission date is required.';
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const showToast = (message: string, type: 'success' | 'error') => {
+    setToast({ message, type });
+    setTimeout(() => {
+      setToast(null);
+    }, 4000);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+
+    setIsSubmitting(true);
+    setFormError(null);
+
+    try {
+      // POST the dynamic payload to ASP.NET Core
+      await sendBackendRequest('students', 'POST', {
+        firstName: formValues.firstName.trim(),
+        lastName: formValues.lastName.trim(),
+        email: formValues.email.trim(),
+        grade: formValues.grade,
+        admissionDate: new Date(formValues.admissionDate).toISOString()
+      });
+
+      // Reset Form State
+      setFormValues({
+        firstName: '',
+        lastName: '',
+        email: '',
+        grade: '',
+        admissionDate: new Date().toISOString().substring(0, 10)
+      });
+
+      showToast('Student created successfully', 'success');
+      setIsModalOpen(false);
+      
+      // Instantly refresh the register table asynchronously
+      retry();
+    } catch (err: any) {
+      console.error('Error creating student:', err);
+      const errMsg = err.message || 'Unable to create student';
+      setFormError(errMsg);
+      showToast(errMsg, 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // Dynamically map database fields to UI grid fields
   const studentsList = (data?.students || []).map(stu => ({
     id: stu.id,
@@ -71,7 +167,10 @@ export default function StudentDirectory() {
             Browse, filter, and inspect enrolled student profiles across grades and terms.
           </p>
         </div>
-        <button className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-title-sm text-xs font-semibold rounded-xl shadow-md shadow-indigo-150/10 hover:shadow-indigo-150/20 active:scale-95 transition-all duration-200 w-full sm:w-auto">
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-title-sm text-xs font-semibold rounded-xl shadow-md shadow-indigo-150/10 hover:shadow-indigo-150/20 active:scale-95 transition-all duration-200 w-full sm:w-auto"
+        >
           <UserPlus className="w-4 h-4" />
           <span>Add Student</span>
         </button>
@@ -255,6 +354,186 @@ export default function StudentDirectory() {
           </div>
         </div>
       </div>
+
+      {/* --- ADD STUDENT MODAL DIALOG --- */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Blur Backdrop */}
+          <div 
+            className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px] transition-opacity animate-in fade-in duration-200"
+            onClick={() => {
+              if (!isSubmitting) setIsModalOpen(false);
+            }}
+          />
+          
+          {/* Modal Container */}
+          <div className="bg-white border border-slate-200/80 rounded-2xl shadow-xl w-full max-w-lg overflow-hidden z-10 animate-in fade-in zoom-in-95 duration-200 flex flex-col">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+              <div>
+                <h2 className="font-display-lg text-lg font-bold text-slate-900">Add New Student</h2>
+                <p className="font-body-sm text-xs text-slate-400 font-medium">Record a new student profile in the register.</p>
+              </div>
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                disabled={isSubmitting}
+                className="text-slate-400 hover:text-slate-600 hover:bg-slate-50 p-1.5 rounded-lg transition-colors outline-none disabled:opacity-50"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+              </button>
+            </div>
+
+            {/* Form Sheet */}
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              {formError && (
+                <div className="p-3 bg-rose-50 border border-rose-100 rounded-xl flex items-center gap-2 text-rose-700 text-xs font-semibold animate-in fade-in duration-150">
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
+                  <span>{formError}</span>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4">
+                {/* First Name */}
+                <div className="space-y-1">
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">First Name</label>
+                  <input
+                    type="text"
+                    name="firstName"
+                    value={formValues.firstName}
+                    onChange={handleInputChange}
+                    disabled={isSubmitting}
+                    className={`w-full px-3 py-2 bg-slate-50 border rounded-xl font-body-sm text-xs focus:bg-white focus:ring-1 outline-none text-slate-800 transition-all placeholder:text-slate-400 ${
+                      errors.firstName ? 'border-rose-350 focus:border-rose-500 focus:ring-rose-500' : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-500'
+                    }`}
+                    placeholder="e.g. Alexander"
+                  />
+                  {errors.firstName && <p className="text-[10px] font-semibold text-rose-500 mt-1">{errors.firstName}</p>}
+                </div>
+
+                {/* Last Name */}
+                <div className="space-y-1">
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Last Name</label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={formValues.lastName}
+                    onChange={handleInputChange}
+                    disabled={isSubmitting}
+                    className={`w-full px-3 py-2 bg-slate-50 border rounded-xl font-body-sm text-xs focus:bg-white focus:ring-1 outline-none text-slate-800 transition-all placeholder:text-slate-400 ${
+                      errors.lastName ? 'border-rose-350 focus:border-rose-500 focus:ring-rose-500' : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-500'
+                    }`}
+                    placeholder="e.g. Lewis"
+                  />
+                  {errors.lastName && <p className="text-[10px] font-semibold text-rose-500 mt-1">{errors.lastName}</p>}
+                </div>
+              </div>
+
+              {/* Email */}
+              <div className="space-y-1">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Email Address</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formValues.email}
+                  onChange={handleInputChange}
+                  disabled={isSubmitting}
+                  className={`w-full px-3 py-2 bg-slate-50 border rounded-xl font-body-sm text-xs focus:bg-white focus:ring-1 outline-none text-slate-800 transition-all placeholder:text-slate-400 ${
+                    errors.email ? 'border-rose-350 focus:border-rose-500 focus:ring-rose-500' : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-500'
+                  }`}
+                  placeholder="e.g. alewis.student@eduind.com"
+                />
+                {errors.email && <p className="text-[10px] font-semibold text-rose-500 mt-1">{errors.email}</p>}
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                {/* Grade */}
+                <div className="space-y-1">
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Grade Level</label>
+                  <div className="relative">
+                    <select
+                      name="grade"
+                      value={formValues.grade}
+                      onChange={handleInputChange}
+                      disabled={isSubmitting}
+                      className={`w-full pl-3 pr-10 py-2 bg-slate-50 border rounded-xl font-body-sm text-xs focus:bg-white focus:ring-1 outline-none text-slate-700 transition-all appearance-none cursor-pointer ${
+                        errors.grade ? 'border-rose-350 focus:border-rose-500 focus:ring-rose-500' : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-500'
+                      }`}
+                    >
+                      <option value="">Select Grade</option>
+                      <option value="Grade 9">Grade 9</option>
+                      <option value="Grade 10">Grade 10</option>
+                      <option value="Grade 11">Grade 11</option>
+                      <option value="Grade 12">Grade 12</option>
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                  </div>
+                  {errors.grade && <p className="text-[10px] font-semibold text-rose-500 mt-1">{errors.grade}</p>}
+                </div>
+
+                {/* Admission Date */}
+                <div className="space-y-1">
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Admission Date</label>
+                  <input
+                    type="date"
+                    name="admissionDate"
+                    value={formValues.admissionDate}
+                    onChange={handleInputChange}
+                    disabled={isSubmitting}
+                    className={`w-full px-3 py-2 bg-slate-50 border rounded-xl font-body-sm text-xs focus:bg-white focus:ring-1 outline-none text-slate-800 transition-all ${
+                      errors.admissionDate ? 'border-rose-350 focus:border-rose-500 focus:ring-rose-500' : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-500'
+                    }`}
+                  />
+                  {errors.admissionDate && <p className="text-[10px] font-semibold text-rose-500 mt-1">{errors.admissionDate}</p>}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="pt-4 border-t border-slate-100 flex justify-end gap-3 select-none">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  disabled={isSubmitting}
+                  className="px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs rounded-xl transition-all disabled:opacity-50 bg-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-title-sm text-xs font-semibold rounded-xl shadow-md shadow-indigo-150/10 hover:shadow-indigo-150/20 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:scale-100"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                      <span>Creating Student...</span>
+                    </>
+                  ) : (
+                    <span>Create Student</span>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* --- TOAST FEEDBACK NOTIFICATION --- */}
+      {toast && (
+        <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border transition-all animate-in fade-in slide-in-from-bottom-5 duration-300 ${
+          toast.type === 'success' 
+            ? 'bg-emerald-50 border-emerald-200 text-emerald-800' 
+            : 'bg-rose-50 border-rose-200 text-rose-800'
+        }`}>
+          <div className={`w-2 h-2 rounded-full ${toast.type === 'success' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+          <span className="font-title-sm text-xs font-semibold">{toast.message}</span>
+          <button 
+            onClick={() => setToast(null)}
+            className="ml-2 hover:opacity-75 transition-opacity text-xs font-bold"
+          >
+            ✕
+          </button>
+        </div>
+      )}
     </div>
   );
 }
