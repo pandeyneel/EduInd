@@ -1,307 +1,258 @@
-import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { fetchBackendData } from '../api';
+import {
+  Plus,
+  ArrowUpRight,
+  TrendingDown,
+  Clock,
+  AlertTriangle,
+  Download,
+  Filter,
+  Calendar
+} from 'lucide-react';
 
 export default function FeeManagement() {
-    const [_data, setData] = useState<any>(null);
+  const [_data, setData] = useState<any>(null);
 
-    useEffect(() => {
-        // Connect to .NET backend
-        fetchBackendData('FeeManagement').then(setData).catch(console.error);
-    }, []);
+  useEffect(() => {
+    // Connect to .NET backend
+    fetchBackendData('FeeManagement').then(setData).catch(console.error);
+  }, []);
 
-    return (
-        <>
+  const transactions = [
+    { id: '#INV-2024-089', name: 'Eleanor Shellstrop', desc: 'Tuition - Fall Term', amount: '$4,500.00', date: 'Oct 15, 2024', status: 'Paid' },
+    { id: '#INV-2024-090', name: 'Chidi Anagonye', desc: 'Library Fines & Fees', amount: '$125.00', date: 'Oct 18, 2024', status: 'Partial' },
+    { id: '#INV-2024-091', name: 'Tahani Al-Jamil', desc: 'Tuition - Fall Term', amount: '$4,500.00', date: 'Sep 01, 2024', status: 'Overdue' },
+    { id: '#INV-2024-092', name: 'Jason Mendoza', desc: 'Athletic Equipment Fee', amount: '$350.00', date: 'Nov 01, 2024', status: 'Pending' },
+    { id: '#INV-2024-093', name: 'Michael', desc: 'Architecture Lab Fee', amount: '$800.00', date: 'Oct 15, 2024', status: 'Paid' }
+  ];
+
+  return (
+    <div className="p-8 space-y-8 max-w-[1600px] mx-auto">
+      {/* Page Title & Actions */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="font-display-lg text-2xl font-bold text-slate-900 tracking-tight leading-none">
+            Financial Ledger
+          </h1>
+          <p className="font-body-sm text-sm text-slate-400 mt-1.5 font-medium">
+            Monitor institutional cash flows, track accounts receivable, and dispatch student invoices.
+          </p>
+        </div>
+        <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-title-sm text-xs font-semibold rounded-xl shadow-md shadow-indigo-100 transition-all duration-200">
+          <Plus className="w-4 h-4" />
+          Generate Invoice
+        </button>
+      </div>
+
+      {/* KPI Cards Section */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Total Collected */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition-all duration-200 group">
+          <div className="flex justify-between items-start mb-4">
+            <span className="font-title-sm text-sm font-semibold text-slate-400">Total Revenue Collected</span>
+            <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+              <ArrowUpRight className="w-5 h-5" />
+            </div>
+          </div>
+          <div>
+            <div className="font-display-lg text-2xl font-extrabold text-slate-900 tracking-tight">$1,245,000</div>
+            <div className="flex items-center gap-1 mt-2 text-xs font-bold text-rose-600 bg-rose-50 px-2.5 py-0.5 rounded-full select-none w-max">
+              <TrendingDown className="w-3.5 h-3.5" />
+              <span>-2.4% vs last term</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Pending Receivables */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition-all duration-200 group">
+          <div className="flex justify-between items-start mb-4">
+            <span className="font-title-sm text-sm font-semibold text-slate-400">Outstanding Receivables</span>
+            <div className="p-2.5 bg-amber-50 text-amber-600 rounded-xl group-hover:bg-amber-600 group-hover:text-white transition-colors">
+              <Clock className="w-5 h-5" />
+            </div>
+          </div>
+          <div>
+            <div className="font-display-lg text-2xl font-extrabold text-slate-900 tracking-tight">$342,500</div>
+            <div className="flex items-center gap-1 mt-2 text-xs font-bold text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-full select-none w-max">
+              <span>45 invoices open</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Overdue Payments */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-6 flex flex-col justify-between shadow-sm hover:shadow-md border-l-4 border-l-rose-500 transition-all duration-200 group">
+          <div className="flex justify-between items-start mb-4">
+            <span className="font-title-sm text-sm font-semibold text-rose-600">Overdue Collections</span>
+            <div className="p-2.5 bg-rose-50 text-rose-600 rounded-xl group-hover:bg-rose-600 group-hover:text-white transition-colors">
+              <AlertTriangle className="w-5 h-5" />
+            </div>
+          </div>
+          <div>
+            <div className="font-display-lg text-2xl font-extrabold text-slate-900 tracking-tight">$85,200</div>
+            <div className="flex items-center gap-1 mt-2 text-xs font-bold text-rose-600 bg-rose-50 px-2.5 py-0.5 rounded-full select-none w-max">
+              <span>Action Required</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Ledger Table & Filters Section */}
+      <div className="grid grid-cols-12 gap-8">
+        
+        {/* Table Log */}
+        <div className="col-span-12 lg:col-span-9 bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden flex flex-col">
+          <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-white">
+            <h3 className="font-title-sm text-base font-bold text-slate-900">Recent Transactions</h3>
+            <div className="flex gap-2">
+              <button className="p-2 border border-slate-200 hover:bg-slate-50 rounded-xl text-slate-500 hover:text-slate-700 transition-all flex items-center justify-center shrink-0">
+                <Download className="w-4 h-4" />
+              </button>
+              <button className="p-2 border border-slate-200 hover:bg-slate-50 rounded-xl text-slate-500 hover:text-slate-700 transition-all flex items-center justify-center shrink-0">
+                <Filter className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-100 bg-slate-50/50">
+                  <th className="px-6 py-4 font-label-caps text-[10px] text-slate-400 uppercase tracking-wider">Invoice ID</th>
+                  <th className="px-6 py-4 font-label-caps text-[10px] text-slate-400 uppercase tracking-wider">Student Profile</th>
+                  <th className="px-6 py-4 font-label-caps text-[10px] text-slate-400 uppercase tracking-wider">Description</th>
+                  <th className="px-6 py-4 font-label-caps text-[10px] text-slate-400 uppercase tracking-wider">Billing Amount</th>
+                  <th className="px-6 py-4 font-label-caps text-[10px] text-slate-400 uppercase tracking-wider">Due Date</th>
+                  <th className="px-6 py-4 font-label-caps text-[10px] text-slate-400 uppercase tracking-wider">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 font-table-data text-xs text-slate-700">
+                {transactions.map((tx) => {
+                  let statusBadge = (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-600">
+                      Paid
+                    </span>
+                  );
+                  if (tx.status === 'Partial') {
+                    statusBadge = (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-600">
+                        Partial
+                      </span>
+                    );
+                  } else if (tx.status === 'Overdue') {
+                    statusBadge = (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-600">
+                        Overdue
+                      </span>
+                    );
+                  } else if (tx.status === 'Pending') {
+                    statusBadge = (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-600">
+                        Pending
+                      </span>
+                    );
+                  }
+
+                  return (
+                    <tr key={tx.id} className="hover:bg-slate-50/40 transition-colors">
+                      <td className="px-6 py-4 font-bold text-slate-900 font-mono">{tx.id}</td>
+                      <td className="px-6 py-4 font-semibold text-slate-800">{tx.name}</td>
+                      <td className="px-6 py-4 text-slate-500 font-medium">{tx.desc}</td>
+                      <td className="px-6 py-4 font-bold text-slate-900">{tx.amount}</td>
+                      <td className="px-6 py-4 text-slate-400 font-medium">{tx.date}</td>
+                      <td className="px-6 py-4">{statusBadge}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Sidebar Filters */}
+        <div className="col-span-12 lg:col-span-3">
+          <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-6">
+            <h3 className="font-title-sm text-base font-bold text-slate-900">Ledger Filters</h3>
             
+            {/* Date Range Selector */}
+            <div className="space-y-3">
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Billing Term</label>
+              
+              <div className="space-y-2">
+                <div>
+                  <span className="text-[10px] text-slate-400 font-bold block mb-1">From</span>
+                  <div className="relative">
+                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    <input
+                      type="text"
+                      className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl font-body-sm text-xs focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-slate-700 transition-all font-semibold"
+                      value="01 Sep 2026"
+                      readOnly
+                    />
+                  </div>
+                </div>
 
-<aside className="fixed left-0 top-0 h-full w-sidebar-width bg-primary dark:bg-primary-container flex flex-col z-20">
+                <div>
+                  <span className="text-[10px] text-slate-400 font-bold block mb-1">To</span>
+                  <div className="relative">
+                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    <input
+                      type="text"
+                      className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl font-body-sm text-xs focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-slate-700 transition-all font-semibold"
+                      value="31 Oct 2026"
+                      readOnly
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
 
-<div className="px-lg py-xl">
-<h1 className="font-display-lg text-display-lg text-on-primary dark:text-on-primary-fixed">EduInd</h1>
-<p className="font-body-sm text-body-sm text-on-primary-container mt-xs">Admin Terminal</p>
-</div>
+            {/* Checkbox Group */}
+            <div className="space-y-3.5">
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Collection Status</label>
+              <div className="space-y-2">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    defaultChecked
+                    className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer"
+                  />
+                  <span className="font-body-sm text-xs text-slate-600 font-medium select-none">Paid In Full</span>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    defaultChecked
+                    className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer"
+                  />
+                  <span className="font-body-sm text-xs text-slate-600 font-medium select-none">Partial Payments</span>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    defaultChecked
+                    className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer"
+                  />
+                  <span className="font-body-sm text-xs text-slate-600 font-medium select-none">Overdue Collections</span>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer"
+                  />
+                  <span className="font-body-sm text-xs text-slate-600 font-medium select-none">Pending Invoices</span>
+                </label>
+              </div>
+            </div>
 
-<nav className="flex-1 overflow-y-auto mt-md">
-<ul className="flex flex-col gap-base">
-<li>
-<Link className="flex items-center px-lg py-md text-on-primary dark:text-on-primary-fixed opacity-60 hover:opacity-100 hover:bg-on-primary-fixed-variant transition-all duration-200 ease-in-out" to="/dashboard">
-<span className="material-symbols-outlined mr-md">dashboard</span>
-<span className="font-title-sm text-title-sm">Admin Dashboard</span>
-</Link>
-</li>
-<li>
-<Link className="flex items-center px-lg py-md text-on-primary dark:text-on-primary-fixed opacity-60 hover:opacity-100 hover:bg-on-primary-fixed-variant transition-all duration-200 ease-in-out" to="/students">
-<span className="material-symbols-outlined mr-md">group</span>
-<span className="font-title-sm text-title-sm">Student Directory</span>
-</Link>
-</li>
-<li>
-<Link className="flex items-center px-lg py-md text-on-primary dark:text-on-primary-fixed border-l-2 border-secondary-fixed opacity-100 bg-on-primary-fixed-variant transition-all duration-200 ease-in-out" to="/fees">
-<span className="material-symbols-outlined mr-md">payments</span>
-<span className="font-title-sm text-title-sm">Fee Management</span>
-</Link>
-</li>
-<li>
-<Link className="flex items-center px-lg py-md text-on-primary dark:text-on-primary-fixed opacity-60 hover:opacity-100 hover:bg-on-primary-fixed-variant transition-all duration-200 ease-in-out" to="/academic">
-<span className="material-symbols-outlined mr-md">menu_book</span>
-<span className="font-title-sm text-title-sm">Academic Hub</span>
-</Link>
-</li>
-<li>
-<Link className="flex items-center px-lg py-md text-on-primary dark:text-on-primary-fixed opacity-60 hover:opacity-100 hover:bg-on-primary-fixed-variant transition-all duration-200 ease-in-out" to="/staff">
-<span className="material-symbols-outlined mr-md">badge</span>
-<span className="font-title-sm text-title-sm">Staff Directory</span>
-</Link>
-</li>
-<li>
-<Link className="flex items-center px-lg py-md text-on-primary dark:text-on-primary-fixed opacity-60 hover:opacity-100 hover:bg-on-primary-fixed-variant transition-all duration-200 ease-in-out" to="/portal">
-<span className="material-symbols-outlined mr-md">family_restroom</span>
-<span className="font-title-sm text-title-sm">Parent Portal</span>
-</Link>
-</li>
-</ul>
-</nav>
-
-<div className="p-lg">
-<button className="w-full py-md bg-secondary-fixed text-on-secondary-fixed font-title-sm text-title-sm rounded-lg mb-xl hover:bg-secondary-container transition-colors">
-                Quick Report
+            {/* Apply Button */}
+            <button className="w-full py-2 bg-slate-50 border border-slate-200 hover:border-slate-300 text-slate-700 font-bold text-xs rounded-xl transition-all">
+              Apply Filter Parameters
             </button>
-<ul className="flex flex-col gap-base border-t border-on-primary-fixed-variant pt-lg">
-<li>
-<a className="flex items-center px-md py-sm text-on-primary dark:text-on-primary-fixed opacity-60 hover:opacity-100 hover:bg-on-primary-fixed-variant transition-all duration-200 ease-in-out" href="#">
-<span className="material-symbols-outlined mr-md text-[20px]">settings</span>
-<span className="font-body-sm text-body-sm">Settings</span>
-</a>
-</li>
-<li>
-<a className="flex items-center px-md py-sm text-on-primary dark:text-on-primary-fixed opacity-60 hover:opacity-100 hover:bg-on-primary-fixed-variant transition-all duration-200 ease-in-out" href="#">
-<span className="material-symbols-outlined mr-md text-[20px]">help</span>
-<span className="font-body-sm text-body-sm">Support</span>
-</a>
-</li>
-</ul>
-</div>
-</aside>
+          </div>
+        </div>
 
-<main className="flex-1 ml-sidebar-width flex flex-col min-h-screen">
-
-<header className="docked full-width top-0 bg-surface dark:bg-surface-dim border-b border-outline-variant dark:border-outline flex justify-between items-center h-16 px-lg z-10 sticky">
-
-<div className="flex items-center w-1/3">
-<div className="relative w-full max-w-md">
-<span className="material-symbols-outlined absolute left-md top-1/2 transform -translate-y-1/2 text-on-surface-variant">search</span>
-<input className="w-full pl-[44px] pr-md py-sm bg-surface-container-lowest border border-outline-variant rounded-lg font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-tertiary-fixed focus:ring-2 focus:ring-tertiary-fixed-dim transition-all" placeholder="Search students, invoices..." type="text"/>
-</div>
-</div>
-
-<div className="flex items-center gap-md">
-<button className="p-sm text-primary dark:text-primary-fixed-dim hover:bg-surface-container-high dark:hover:bg-surface-container-highest rounded-full transition-all scale-95 duration-150">
-<span className="material-symbols-outlined">notifications</span>
-</button>
-<button className="p-sm text-primary dark:text-primary-fixed-dim hover:bg-surface-container-high dark:hover:bg-surface-container-highest rounded-full transition-all scale-95 duration-150">
-<span className="material-symbols-outlined">history</span>
-</button>
-<button className="p-sm text-primary dark:text-primary-fixed-dim hover:bg-surface-container-high dark:hover:bg-surface-container-highest rounded-full transition-all scale-95 duration-150">
-<span className="material-symbols-outlined">account_circle</span>
-</button>
-</div>
-</header>
-
-<div className="flex-1 p-xl overflow-y-auto">
-<div className="flex justify-between items-end mb-xl">
-<div>
-<h2 className="font-headline-md text-headline-md text-on-surface">Fee Management</h2>
-<p className="font-body-md text-body-md text-on-surface-variant mt-xs">Overview and tracking of institutional revenue.</p>
-</div>
-<button className="flex items-center gap-sm bg-primary text-on-primary px-lg py-sm rounded-lg font-title-sm text-title-sm hover:bg-on-primary-fixed-variant transition-colors">
-<span className="material-symbols-outlined text-[20px]">add</span>
-                    Generate Invoice
-                </button>
-</div>
-
-<div className="grid grid-cols-1 md:grid-cols-3 gap-lg mb-xl">
-
-<div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg">
-<div className="flex justify-between items-start mb-md">
-<span className="font-title-sm text-title-sm text-on-surface-variant">Total Collected</span>
-<span className="material-symbols-outlined text-outline">account_balance</span>
-</div>
-<div className="font-display-lg text-display-lg text-on-surface">$1,245,000</div>
-<div className="flex items-center gap-xs mt-sm text-error">
-<span className="material-symbols-outlined text-[16px]">arrow_downward</span>
-<span className="font-body-sm text-body-sm">2.4% vs last term</span>
-</div>
-</div>
-
-<div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg">
-<div className="flex justify-between items-start mb-md">
-<span className="font-title-sm text-title-sm text-on-surface-variant">Pending Receivables</span>
-<span className="material-symbols-outlined text-outline">pending_actions</span>
-</div>
-<div className="font-display-lg text-display-lg text-on-surface">$342,500</div>
-<div className="flex items-center gap-xs mt-sm text-tertiary-container">
-<span className="material-symbols-outlined text-[16px]">info</span>
-<span className="font-body-sm text-body-sm">45 invoices open</span>
-</div>
-</div>
-
-<div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg border-l-4 border-l-error">
-<div className="flex justify-between items-start mb-md">
-<span className="font-title-sm text-title-sm text-error">Overdue Payments</span>
-<span className="material-symbols-outlined text-error">warning</span>
-</div>
-<div className="font-display-lg text-display-lg text-on-surface">$85,200</div>
-<div className="flex items-center gap-xs mt-sm text-error">
-<span className="material-symbols-outlined text-[16px]">trending_up</span>
-<span className="font-body-sm text-body-sm">Requires immediate action</span>
-</div>
-</div>
-</div>
-
-<div className="grid grid-cols-12 gap-lg">
-
-<div className="col-span-12 lg:col-span-9 bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden">
-<div className="p-lg border-b border-outline-variant flex justify-between items-center">
-<h3 className="font-title-sm text-title-sm text-on-surface">Recent Transactions</h3>
-<div className="flex gap-sm">
-<button className="p-sm border border-outline-variant rounded hover:bg-surface-container-low transition-colors">
-<span className="material-symbols-outlined text-[20px] text-on-surface-variant">download</span>
-</button>
-<button className="p-sm border border-outline-variant rounded hover:bg-surface-container-low transition-colors">
-<span className="material-symbols-outlined text-[20px] text-on-surface-variant">filter_list</span>
-</button>
-</div>
-</div>
-<div className="overflow-x-auto">
-<table className="w-full text-left border-collapse">
-<thead>
-<tr className="border-b border-outline-variant bg-surface-container-low">
-<th className="px-md py-sm font-label-caps text-label-caps text-on-surface-variant">Invoice ID</th>
-<th className="px-md py-sm font-label-caps text-label-caps text-on-surface-variant">Student</th>
-<th className="px-md py-sm font-label-caps text-label-caps text-on-surface-variant">Description</th>
-<th className="px-md py-sm font-label-caps text-label-caps text-on-surface-variant">Amount</th>
-<th className="px-md py-sm font-label-caps text-label-caps text-on-surface-variant">Due Date</th>
-<th className="px-md py-sm font-label-caps text-label-caps text-on-surface-variant">Status</th>
-</tr>
-</thead>
-<tbody className="font-table-data text-table-data text-on-surface">
-<tr className="border-b border-surface-container-high hover:bg-surface-container-lowest transition-colors">
-<td className="px-md py-md font-bold text-primary">#INV-2024-089</td>
-<td className="px-md py-md">Eleanor Shellstrop</td>
-<td className="px-md py-md text-on-surface-variant">Tuition - Fall Term</td>
-<td className="px-md py-md">$4,500.00</td>
-<td className="px-md py-md">Oct 15, 2024</td>
-<td className="px-md py-md">
-<span className="inline-flex items-center px-sm py-xs rounded-full bg-primary/10 text-primary font-bold text-[11px] uppercase tracking-wider">
-                                            Paid
-                                        </span>
-</td>
-</tr>
-<tr className="border-b border-surface-container-high bg-surface-container-low/30 hover:bg-surface-container-lowest transition-colors">
-<td className="px-md py-md font-bold text-primary">#INV-2024-090</td>
-<td className="px-md py-md">Chidi Anagonye</td>
-<td className="px-md py-md text-on-surface-variant">Library Fines &amp; Fees</td>
-<td className="px-md py-md">$125.00</td>
-<td className="px-md py-md">Oct 18, 2024</td>
-<td className="px-md py-md">
-<span className="inline-flex items-center px-sm py-xs rounded-full bg-tertiary-container/10 text-tertiary-container font-bold text-[11px] uppercase tracking-wider">
-                                            Partial
-                                        </span>
-</td>
-</tr>
-<tr className="border-b border-surface-container-high hover:bg-surface-container-lowest transition-colors">
-<td className="px-md py-md font-bold text-primary">#INV-2024-091</td>
-<td className="px-md py-md">Tahani Al-Jamil</td>
-<td className="px-md py-md text-on-surface-variant">Tuition - Fall Term</td>
-<td className="px-md py-md">$4,500.00</td>
-<td className="px-md py-md">Sep 01, 2024</td>
-<td className="px-md py-md">
-<span className="inline-flex items-center px-sm py-xs rounded-full bg-error/10 text-error font-bold text-[11px] uppercase tracking-wider">
-                                            Overdue
-                                        </span>
-</td>
-</tr>
-<tr className="border-b border-surface-container-high bg-surface-container-low/30 hover:bg-surface-container-lowest transition-colors">
-<td className="px-md py-md font-bold text-primary">#INV-2024-092</td>
-<td className="px-md py-md">Jason Mendoza</td>
-<td className="px-md py-md text-on-surface-variant">Athletic Equipment Fee</td>
-<td className="px-md py-md">$350.00</td>
-<td className="px-md py-md">Nov 01, 2024</td>
-<td className="px-md py-md">
-<span className="inline-flex items-center px-sm py-xs rounded-full bg-surface-tint/10 text-surface-tint font-bold text-[11px] uppercase tracking-wider">
-                                            Pending
-                                        </span>
-</td>
-</tr>
-<tr className="hover:bg-surface-container-lowest transition-colors">
-<td className="px-md py-md font-bold text-primary">#INV-2024-093</td>
-<td className="px-md py-md">Michael</td>
-<td className="px-md py-md text-on-surface-variant">Architecture Lab Fee</td>
-<td className="px-md py-md">$800.00</td>
-<td className="px-md py-md">Oct 15, 2024</td>
-<td className="px-md py-md">
-<span className="inline-flex items-center px-sm py-xs rounded-full bg-primary/10 text-primary font-bold text-[11px] uppercase tracking-wider">
-                                            Paid
-                                        </span>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-
-<div className="col-span-12 lg:col-span-3">
-<div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg sticky top-[88px]">
-<h3 className="font-title-sm text-title-sm text-on-surface mb-md">Filters</h3>
-<div className="mb-lg">
-<label className="block font-body-sm font-bold text-on-surface mb-sm">Date Range</label>
-<div className="space-y-sm">
-<div>
-<span className="text-[12px] text-on-surface-variant block mb-xs">From</span>
-<div className="relative">
-<span className="material-symbols-outlined absolute left-sm top-1/2 transform -translate-y-1/2 text-outline-variant text-[18px]">calendar_today</span>
-<input className="w-full pl-lg pr-sm py-sm border border-outline-variant rounded bg-surface focus:border-primary focus:ring-1 focus:ring-primary text-body-sm font-body-sm transition-all" type="text" value="01 Sep 2024"/>
-</div>
-</div>
-<div>
-<span className="text-[12px] text-on-surface-variant block mb-xs">To</span>
-<div className="relative">
-<span className="material-symbols-outlined absolute left-sm top-1/2 transform -translate-y-1/2 text-outline-variant text-[18px]">calendar_today</span>
-<input className="w-full pl-lg pr-sm py-sm border border-outline-variant rounded bg-surface focus:border-primary focus:ring-1 focus:ring-primary text-body-sm font-body-sm transition-all" type="text" value="31 Oct 2024"/>
-</div>
-</div>
-</div>
-</div>
-<div className="mb-lg">
-<label className="block font-body-sm font-bold text-on-surface mb-sm">Status</label>
-<div className="space-y-xs">
-<label className="flex items-center gap-sm">
-<input defaultChecked className="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
-<span className="font-body-sm text-body-sm text-on-surface">Paid</span>
-</label>
-<label className="flex items-center gap-sm">
-<input defaultChecked className="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
-<span className="font-body-sm text-body-sm text-on-surface">Partial</span>
-</label>
-<label className="flex items-center gap-sm">
-<input defaultChecked className="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
-<span className="font-body-sm text-body-sm text-on-surface">Overdue</span>
-</label>
-<label className="flex items-center gap-sm">
-<input className="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
-<span className="font-body-sm text-body-sm text-on-surface">Pending</span>
-</label>
-</div>
-</div>
-<button className="w-full py-sm border border-outline-variant text-on-surface font-title-sm text-title-sm rounded hover:bg-surface-container-low transition-colors">
-                            Apply Filters
-                        </button>
-</div>
-</div>
-</div>
-</div>
-</main>
-
-        </>
-    );
+      </div>
+    </div>
+  );
 }

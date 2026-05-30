@@ -6,22 +6,25 @@ import AcademicHub from './pages/AcademicHub';
 import FeeManagement from './pages/FeeManagement';
 import DetailedStudentProfile from './pages/DetailedStudentProfile';
 import ParentStudentPortal from './pages/ParentStudentPortal';
+import Layout from './components/Layout';
 
 import './App.css';
 
 function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="/dashboard" element={<AdminDashboard />} />
-        <Route path="/students" element={<StudentDirectory />} />
-        <Route path="/students/detail" element={<DetailedStudentProfile />} />
-        <Route path="/staff" element={<StaffDirectory />} />
-        <Route path="/academic" element={<AcademicHub />} />
-        <Route path="/fees" element={<FeeManagement />} />
-        <Route path="/portal" element={<ParentStudentPortal />} />
-      </Routes>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/dashboard" element={<AdminDashboard />} />
+          <Route path="/students" element={<StudentDirectory />} />
+          <Route path="/students/detail" element={<DetailedStudentProfile />} />
+          <Route path="/staff" element={<StaffDirectory />} />
+          <Route path="/academic" element={<AcademicHub />} />
+          <Route path="/fees" element={<FeeManagement />} />
+          <Route path="/portal" element={<ParentStudentPortal />} />
+        </Routes>
+      </Layout>
     </Router>
   );
 }
