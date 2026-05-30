@@ -17,12 +17,12 @@ function App() {
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<AdminDashboard />} />
-          <Route path="/students" element={<StudentDirectory />} />
-          <Route path="/students/detail" element={<DetailedStudentProfile />} />
-          <Route path="/staff" element={<StaffDirectory />} />
-          <Route path="/academic" element={<AcademicHub />} />
-          <Route path="/fees" element={<FeeManagement />} />
-          <Route path="/portal" element={<ParentStudentPortal />} />
+          <Route path="/student-directory" element={<StudentDirectory />} />
+          <Route path="/student-directory/detail" element={<DetailedStudentProfile />} />
+          <Route path="/staff-directory" element={<StaffDirectory />} />
+          <Route path="/academic-hub" element={<AcademicHub />} />
+          <Route path="/fee-management" element={<FeeManagement />} />
+          <Route path="/parent-portal" element={<ParentStudentPortal />} />
         </Routes>
       </Layout>
     </Router>

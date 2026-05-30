@@ -6,7 +6,12 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend",
         policy =>
         {
-            policy.WithOrigins("http://localhost:5173")
+            policy.WithOrigins(
+                      "http://localhost:5173",
+                      "http://localhost:3000",
+                      "https://eduind.online",
+                      "https://www.eduind.online"
+                  )
                   .AllowAnyHeader()
                   .AllowAnyMethod();
         });

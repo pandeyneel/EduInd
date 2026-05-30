@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { fetchBackendData } from '../api';
+import { useApi } from '../api';
+import BackendStatusBanner from '../components/BackendStatusBanner';
 import {
   Users,
   CalendarCheck,
@@ -16,13 +16,21 @@ import {
   Calendar
 } from 'lucide-react';
 
-export default function AdminDashboard() {
-  const [_data, setData] = useState<any>(null);
+interface DashboardData {
+  Message: string;
+  TotalEnrolled: number;
+  Attendance: number;
+  PendingFees: number;
+}
 
-  useEffect(() => {
-    // Connect to .NET backend
-    fetchBackendData('AdminDashboard').then(setData).catch(console.error);
-  }, []);
+export default function AdminDashboard() {
+  // Use our resilient API hook with fallback simulation datasets
+  const { data, loading, retry, isFallback } = useApi<DashboardData>('AdminDashboard', {
+    Message: "Data for Admin Dashboard",
+    TotalEnrolled: 3248,
+    Attendance: 96.2,
+    PendingFees: 42500
+  });
 
   // Simple sparkline path generators
   const sparklineData1 = "M 0 15 Q 10 5, 20 18 T 40 10 T 60 2 T 80 12";
@@ -30,33 +38,42 @@ export default function AdminDashboard() {
   const sparklineData3 = "M 0 5 Q 10 15, 20 12 T 40 18 T 60 10 T 80 15";
   const sparklineData4 = "M 0 18 Q 10 10, 20 15 T 40 5 T 60 12 T 80 2";
 
+  // Use either backend data or our safe fallback state
+  const totalStudents = data?.TotalEnrolled ?? 3248;
+  const attendanceVal = data?.Attendance ?? 96.2;
+  const pendingFees = data?.PendingFees ?? 42500;
+
   return (
-    <div className="p-8 space-y-8 max-w-[1600px] mx-auto">
+    <div className="p-4 sm:p-8 space-y-6 sm:space-y-8 max-w-[1600px] mx-auto animate-in fade-in duration-200">
+      
+      {/* Backend Status Banner for Cold Starts */}
+      <BackendStatusBanner isFallback={isFallback} loading={loading} retry={retry} />
+
       {/* Top Welcome Title Grid */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="font-display-lg text-2xl font-bold text-slate-900 tracking-tight leading-none">
-            Welcome to the Console
+          <h1 className="font-display-lg text-xl sm:text-2xl font-bold text-slate-900 tracking-tight leading-none flex items-center gap-2">
+            Welcome to EduInd
           </h1>
-          <p className="font-body-sm text-sm text-slate-400 mt-1.5 font-medium">
-            Here's a unified look at key performance metrics across your organization.
+          <p className="font-body-sm text-xs sm:text-sm text-slate-400 mt-1.5 font-medium">
+            Smart Education Management Dashboard. Today's snapshot of system performance.
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="font-label-caps text-xs text-slate-500 bg-slate-100 px-3.5 py-1.5 rounded-xl border border-slate-200/50 font-bold select-none">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <span className="font-label-caps text-[10px] sm:text-xs text-slate-500 bg-slate-100 px-3.5 py-1.5 rounded-xl border border-slate-200/50 font-bold select-none whitespace-nowrap">
             Academic Term: Fall 2026
           </span>
-          <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-title-sm text-xs font-semibold rounded-xl shadow-md shadow-indigo-100 transition-all duration-200">
+          <button className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-title-sm text-xs font-semibold rounded-xl shadow-md shadow-indigo-150/10 hover:shadow-indigo-150/20 hover:scale-[1.01] active:scale-95 transition-all duration-200 w-full sm:w-auto">
             <Plus className="w-4 h-4" />
-            Quick Report
+            <span>Quick Report</span>
           </button>
         </div>
       </div>
 
       {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5">
         {/* Total Students */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 flex flex-col justify-between shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-200 group">
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 flex flex-col justify-between shadow-sm hover:shadow-md hover:border-indigo-150 transition-all duration-300 group">
           <div className="flex justify-between items-start">
             <div className="p-2.5 bg-indigo-50 rounded-xl text-indigo-600 transition-colors group-hover:bg-indigo-600 group-hover:text-white">
               <Users className="w-5 h-5" />
@@ -69,7 +86,9 @@ export default function AdminDashboard() {
           <div className="mt-4">
             <p className="font-body-sm text-xs text-slate-400 font-medium">Total Students</p>
             <div className="flex items-baseline gap-2 mt-0.5">
-              <span className="font-display-lg text-xl font-bold text-slate-900 leading-none">3,248</span>
+              <span className="font-display-lg text-xl font-bold text-slate-900 leading-none">
+                {totalStudents.toLocaleString()}
+              </span>
               <span className="text-[10px] text-slate-400 font-bold">active</span>
             </div>
           </div>
@@ -81,8 +100,8 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Today's Attendance */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 flex flex-col justify-between shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-200 group">
+        {/* Daily Attendance */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 flex flex-col justify-between shadow-sm hover:shadow-md hover:border-emerald-150 transition-all duration-300 group">
           <div className="flex justify-between items-start">
             <div className="p-2.5 bg-emerald-50 rounded-xl text-emerald-600 transition-colors group-hover:bg-emerald-600 group-hover:text-white">
               <CalendarCheck className="w-5 h-5" />
@@ -94,7 +113,9 @@ export default function AdminDashboard() {
           <div className="mt-4">
             <p className="font-body-sm text-xs text-slate-400 font-medium">Daily Attendance</p>
             <div className="flex items-baseline gap-2 mt-0.5">
-              <span className="font-display-lg text-xl font-bold text-slate-900 leading-none">96.2%</span>
+              <span className="font-display-lg text-xl font-bold text-slate-900 leading-none">
+                {attendanceVal}%
+              </span>
               <span className="text-[10px] text-emerald-600 font-bold">Above Target</span>
             </div>
           </div>
@@ -106,7 +127,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Pending Fees */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 flex flex-col justify-between shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-200 group">
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 flex flex-col justify-between shadow-sm hover:shadow-md hover:border-rose-155 transition-all duration-300 group">
           <div className="flex justify-between items-start">
             <div className="p-2.5 bg-rose-50 rounded-xl text-rose-600 transition-colors group-hover:bg-rose-600 group-hover:text-white">
               <CreditCard className="w-5 h-5" />
@@ -119,7 +140,9 @@ export default function AdminDashboard() {
           <div className="mt-4">
             <p className="font-body-sm text-xs text-slate-400 font-medium">Pending Fees</p>
             <div className="flex items-baseline gap-2 mt-0.5">
-              <span className="font-display-lg text-xl font-bold text-slate-900 leading-none">$42.5k</span>
+              <span className="font-display-lg text-xl font-bold text-slate-900 leading-none">
+                ${(pendingFees / 1000).toFixed(1)}k
+              </span>
               <span className="text-[10px] text-rose-500 font-semibold">Action Required</span>
             </div>
           </div>
@@ -131,7 +154,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* New Admissions */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 flex flex-col justify-between shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-200 group">
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 flex flex-col justify-between shadow-sm hover:shadow-md hover:border-blue-150 transition-all duration-300 group">
           <div className="flex justify-between items-start">
             <div className="p-2.5 bg-blue-50 rounded-xl text-blue-600 transition-colors group-hover:bg-blue-600 group-hover:text-white">
               <UserPlus className="w-5 h-5" />
@@ -154,8 +177,8 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Teachers */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 flex flex-col justify-between shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-200 group">
+        {/* Instructors */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 flex flex-col justify-between shadow-sm hover:shadow-md hover:border-amber-150 transition-all duration-300 group">
           <div className="flex justify-between items-start">
             <div className="p-2.5 bg-amber-50 rounded-xl text-amber-600 transition-colors group-hover:bg-amber-600 group-hover:text-white">
               <BookOpen className="w-5 h-5" />
@@ -165,7 +188,7 @@ export default function AdminDashboard() {
             </div>
           </div>
           <div className="mt-4">
-            <p className="font-body-sm text-xs text-slate-400 font-medium">Teachers</p>
+            <p className="font-body-sm text-xs text-slate-400 font-medium">Staff Members</p>
             <div className="flex items-baseline gap-2 mt-0.5">
               <span className="font-display-lg text-xl font-bold text-slate-900 leading-none">182</span>
               <span className="text-[10px] text-slate-400 font-bold">instructors</span>
@@ -179,7 +202,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Parent Engagement */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 flex flex-col justify-between shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-200 group">
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 flex flex-col justify-between shadow-sm hover:shadow-md hover:border-purple-150 transition-all duration-300 group">
           <div className="flex justify-between items-start">
             <div className="p-2.5 bg-purple-50 rounded-xl text-purple-600 transition-colors group-hover:bg-purple-600 group-hover:text-white">
               <Heart className="w-5 h-5" />
@@ -189,7 +212,7 @@ export default function AdminDashboard() {
             </div>
           </div>
           <div className="mt-4">
-            <p className="font-body-sm text-xs text-slate-400 font-medium">Parent Engagement</p>
+            <p className="font-body-sm text-xs text-slate-400 font-medium">Portal Activity</p>
             <div className="flex items-baseline gap-2 mt-0.5">
               <span className="font-display-lg text-xl font-bold text-slate-900 leading-none">88.4%</span>
               <span className="text-[10px] text-purple-500 font-semibold">Portal Active</span>
@@ -204,17 +227,17 @@ export default function AdminDashboard() {
       </div>
 
       {/* Main Charts & Activity Feed Layout */}
-      <div className="grid grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
         {/* Left Section: Trends Charts */}
-        <div className="col-span-12 lg:col-span-8 flex flex-col gap-8">
+        <div className="lg:col-span-8 flex flex-col gap-8">
           {/* Trends Charts Card */}
-          <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm flex flex-col gap-6">
-            <div className="flex justify-between items-center">
+          <div className="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-6 shadow-sm flex flex-col gap-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
               <div>
                 <h3 className="font-title-sm text-base font-bold text-slate-900">Trends Monitor</h3>
                 <p className="font-body-sm text-xs text-slate-400">Enrollment expansion and average monthly attendance logs.</p>
               </div>
-              <div className="flex items-center gap-4 text-xs font-semibold text-slate-500 select-none">
+              <div className="flex items-center gap-4 text-[11px] sm:text-xs font-semibold text-slate-500 select-none">
                 <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-indigo-600" /> Enrollment</span>
                 <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-blue-500" /> Attendance</span>
               </div>
@@ -264,37 +287,37 @@ export default function AdminDashboard() {
         </div>
 
         {/* Right Section: Recent Activities Feed */}
-        <div className="col-span-12 lg:col-span-4 flex flex-col">
+        <div className="lg:col-span-4 flex flex-col">
           <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm flex flex-col flex-1">
             <h3 className="font-title-sm text-base font-bold text-slate-900 mb-5">System Activities</h3>
             <div className="flex-grow space-y-5">
-              <div className="flex gap-4 items-start">
-                <div className="w-2.5 h-2.5 rounded-full bg-indigo-500 mt-1.5 ring-4 ring-indigo-50" />
-                <div className="flex-1">
+              <div className="flex gap-4 items-start animate-in fade-in duration-200">
+                <div className="w-2.5 h-2.5 rounded-full bg-indigo-500 mt-1.5 ring-4 ring-indigo-50 shrink-0" />
+                <div className="flex-1 min-w-0">
                   <p className="font-body-sm text-xs text-slate-700 font-semibold leading-tight">Curriculum updated by Mr. Aris</p>
                   <p className="text-[10px] text-slate-400 font-medium mt-1">Academics Hub • 10 minutes ago</p>
                 </div>
               </div>
 
               <div className="flex gap-4 items-start">
-                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 mt-1.5 ring-4 ring-emerald-50" />
-                <div className="flex-1">
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 mt-1.5 ring-4 ring-emerald-50 shrink-0" />
+                <div className="flex-1 min-w-0">
                   <p className="font-body-sm text-xs text-slate-700 font-semibold leading-tight">Fee payment logged for Emma Thompson</p>
                   <p className="text-[10px] text-slate-400 font-medium mt-1">Finance Admin • 1 hour ago</p>
                 </div>
               </div>
 
               <div className="flex gap-4 items-start">
-                <div className="w-2.5 h-2.5 rounded-full bg-amber-500 mt-1.5 ring-4 ring-amber-50" />
-                <div className="flex-1">
+                <div className="w-2.5 h-2.5 rounded-full bg-amber-500 mt-1.5 ring-4 ring-amber-50 shrink-0" />
+                <div className="flex-1 min-w-0">
                   <p className="font-body-sm text-xs text-slate-700 font-semibold leading-tight">Leave request sent by Dr. Mercer</p>
                   <p className="text-[10px] text-slate-400 font-medium mt-1">Staff Directory • 3 hours ago</p>
                 </div>
               </div>
 
               <div className="flex gap-4 items-start">
-                <div className="w-2.5 h-2.5 rounded-full bg-slate-300 mt-1.5 ring-4 ring-slate-50" />
-                <div className="flex-1">
+                <div className="w-2.5 h-2.5 rounded-full bg-slate-350 mt-1.5 ring-4 ring-slate-100 shrink-0" />
+                <div className="flex-1 min-w-0">
                   <p className="font-body-sm text-xs text-slate-700 font-medium leading-tight">System backups completed</p>
                   <p className="text-[10px] text-slate-400 font-medium mt-1">Automated Task • Yesterday</p>
                 </div>
@@ -304,21 +327,22 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Admissions Table & Right Panels Layout */}
-      <div className="grid grid-cols-12 gap-8">
-        {/* Recent Admissions table */}
-        <div className="col-span-12 lg:col-span-8 bg-white border border-slate-200/80 rounded-2xl shadow-sm flex flex-col">
-          <div className="p-6 border-b border-slate-100 flex justify-between items-center">
+      {/* Registrations Table & Right Panels Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
+        {/* Recent Registrations table */}
+        <div className="lg:col-span-8 bg-white border border-slate-200/80 rounded-2xl shadow-sm flex flex-col overflow-hidden">
+          <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-white">
             <div>
               <h3 className="font-title-sm text-base font-bold text-slate-900">Recent Registrations</h3>
               <p className="font-body-sm text-xs text-slate-400">Newly approved student profiles this week.</p>
             </div>
-            <Link to="/students" className="font-label-caps text-xs text-indigo-600 hover:text-indigo-700 font-bold flex items-center gap-1 group">
-              View Register <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+            <Link to="/student-directory" className="font-label-caps text-xs text-indigo-600 hover:text-indigo-700 font-bold flex items-center gap-1 group whitespace-nowrap">
+              <span>View Register</span>
+              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse min-w-[500px]">
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50/50">
                   <th className="px-6 py-3.5 font-label-caps text-[10px] text-slate-400 uppercase tracking-wider">Student Name</th>
@@ -358,12 +382,12 @@ export default function AdminDashboard() {
         </div>
 
         {/* Announcements & Events panel */}
-        <div className="col-span-12 lg:col-span-4 flex flex-col gap-8">
+        <div className="lg:col-span-4 flex flex-col gap-6 sm:gap-8">
           {/* Active Announcements */}
           <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm flex flex-col gap-4 flex-1">
             <div className="flex justify-between items-center border-b border-slate-100 pb-3">
               <h3 className="font-title-sm text-base font-bold text-slate-900 flex items-center gap-2">
-                <BellRing className="w-[18px] h-[18px] text-indigo-500" /> Announcements
+                <BellRing className="w-[18px] h-[18px] text-indigo-500 animate-bounce" /> Announcements
               </h3>
             </div>
             <div className="space-y-4">
