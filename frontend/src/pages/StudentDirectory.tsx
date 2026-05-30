@@ -15,24 +15,45 @@ import {
   Edit2
 } from 'lucide-react';
 
+interface Student {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  grade: string;
+  admissionDate: string;
+  createdAt: string;
+}
+
 interface StudentData {
-  Message: string;
+  message: string;
+  students: Student[];
 }
 
 export default function StudentDirectory() {
-  const { loading, retry, isFallback } = useApi<StudentData>('StudentDirectory', {
-    Message: "Data for Student Directory"
+  const { data, loading, retry, isFallback } = useApi<StudentData>('StudentDirectory', {
+    message: "Data for Student Directory",
+    students: [
+      { id: '1', firstName: 'Alexander', lastName: 'Lewis', email: 'alewis.student@eduind.com', grade: 'Grade 10', admissionDate: '2023-08-15T00:00:00Z', createdAt: '2026-05-30T00:00:00Z' },
+      { id: '2', firstName: 'Bianca', lastName: 'Castafiore', email: 'bcastafiore.student@eduind.com', grade: 'Grade 11', admissionDate: '2022-09-01T00:00:00Z', createdAt: '2026-05-30T00:00:00Z' },
+      { id: '3', firstName: 'Charles', lastName: 'Wang', email: 'cwang.student@eduind.com', grade: 'Grade 9', admissionDate: '2024-01-05T00:00:00Z', createdAt: '2026-05-30T00:00:00Z' },
+      { id: '4', firstName: 'Diana', lastName: 'Prince', email: 'dprince.student@eduind.com', grade: 'Grade 12', admissionDate: '2021-08-20T00:00:00Z', createdAt: '2026-05-30T00:00:00Z' },
+      { id: '5', firstName: 'Ethan', lastName: 'Hunt', email: 'ehunt.student@eduind.com', grade: 'Grade 10', admissionDate: '2023-11-10T00:00:00Z', createdAt: '2026-05-30T00:00:00Z' }
+    ]
   });
 
-  const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
-  const studentsList = [
-    { id: 1, name: 'Alexander Lewis', code: 'AL', grade: 'Grade 10', section: 'A', roll: '2023-1042', status: 'Enrolled' },
-    { id: 2, name: 'Bianca Castafiore', code: 'BC', grade: 'Grade 11', section: 'B', roll: '2022-0911', status: 'Enrolled' },
-    { id: 3, name: 'Charles Wang', code: 'CW', grade: 'Grade 9', section: 'A', roll: '2024-0105', status: 'Pending' },
-    { id: 4, name: 'Diana Prince', code: 'DP', grade: 'Grade 12', section: 'C', roll: '2021-3302', status: 'Enrolled' },
-    { id: 5, name: 'Ethan Hunt', code: 'EH', grade: 'Grade 10', section: 'B', roll: '2023-1188', status: 'Suspended' }
-  ];
+  // Dynamically map database fields to UI grid fields
+  const studentsList = (data?.students || []).map(stu => ({
+    id: stu.id,
+    name: `${stu.firstName} ${stu.lastName}`,
+    code: `${stu.firstName.charAt(0)}${stu.lastName.charAt(0)}`.toUpperCase(),
+    grade: stu.grade,
+    section: 'A', // Visual layout section
+    roll: `STU-${new Date(stu.admissionDate).getFullYear()}-${stu.id.substring(0, 4).toUpperCase()}`,
+    status: 'Enrolled' // Visual layout default status
+  }));
 
   return (
     <div className="p-4 sm:p-8 space-y-6 sm:space-y-8 max-w-[1600px] mx-auto animate-in fade-in duration-200">
@@ -212,7 +233,7 @@ export default function StudentDirectory() {
         {/* Table Footer with Pagination links */}
         <div className="px-6 py-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 select-none bg-white">
           <span className="font-body-sm text-xs text-slate-400 font-medium">
-            Showing 1 to 5 of 248 register entries
+            Showing 1 to {studentsList.length} of {studentsList.length} register entries
           </span>
           <div className="flex items-center gap-1.5">
             <button className="p-1.5 rounded-lg border border-slate-200 text-slate-400 disabled:opacity-40 hover:bg-slate-50 transition-colors disabled:hover:bg-transparent" disabled>
