@@ -89,3 +89,50 @@ export function useApi<T>(endpoint: string, fallbackData: T): ApiState<T> {
 
   return { data, loading, error, retry, isFallback };
 }
+
+/**
+ * Dynamic request helper for non-GET requests (POST, PUT, DELETE).
+ */
+export async function sendBackendRequest<TInput, TOutput>(
+  endpoint: string,
+  method: 'POST' | 'PUT' | 'DELETE',
+  body?: TInput
+): Promise<TOutput> {
+  const url = `${API_BASE_URL}/api/${endpoint}`;
+  
+  const response = await fetch(url, {
+    method: method,
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+
+  if (!response.ok) {
+    let errorMessage = `API returned failure state: ${response.status} ${response.statusText}`;
+    try {
+      const errorJson = await response.json();
+      if (errorJson && errorJson.Message) {
+        errorMessage = errorJson.Message;
+      } else if (errorJson && errorJson.message) {
+        errorMessage = errorJson.message;
+      } else if (errorJson && typeof errorJson === 'object') {
+        const errors = errorJson.errors;
+        if (errors && typeof errors === 'object') {
+          const detail = Object.values(errors).flat().join(' ');
+          if (detail) errorMessage = detail;
+        }
+      }
+    } catch {
+      // Fallback
+    }
+    throw new Error(errorMessage);
+  }
+
+  if (response.status === 204) {
+    return {} as TOutput;
+  }
+
+  return (await response.json()) as TOutput;
+}
