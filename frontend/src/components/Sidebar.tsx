@@ -1,4 +1,5 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard,
   Users,
@@ -14,7 +15,8 @@ import {
   Sparkles,
   ChevronRight,
   LogOut,
-  X
+  X,
+  User
 } from 'lucide-react';
 
 interface MenuItem {
@@ -31,25 +33,51 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
+  const { user, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const currentPath = location.pathname;
+  const role = user?.role || 'ADMIN';
 
-  const menuItems: MenuItem[] = [
-    { name: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
-    { name: 'Students', icon: Users, path: '/student-directory' },
-    { name: 'Admissions', icon: UserPlus, path: '#', badge: 'New' },
-    { name: 'Academics', icon: BookOpen, path: '/academic-hub' },
-    { name: 'Attendance', icon: CalendarCheck, path: '#' },
-    { name: 'Staff', icon: IdCard, path: '/staff-directory' },
-    { name: 'Finance', icon: CreditCard, path: '/fee-management' },
-    { name: 'Communication', icon: MessageSquare, path: '/parent-portal', badge: '2' },
-    { name: 'Reports', icon: BarChart3, path: '#' },
-  ];
+  const getMenuItems = (): MenuItem[] => {
+    if (role === 'STUDENT') {
+      return [
+        { name: 'Dashboard', icon: LayoutDashboard, path: '/student/dashboard' },
+        { name: 'My Courses', icon: BookOpen, path: '/student/courses' },
+        { name: 'My Attendance', icon: CalendarCheck, path: '/student/attendance' },
+        { name: 'My Fees', icon: CreditCard, path: '/student/fees' },
+        { name: 'My Reports', icon: BarChart3, path: '/student/reports' },
+      ];
+    }
 
-  const bottomItems: MenuItem[] = [
-    { name: 'Settings', icon: Settings, path: '#' },
-    { name: 'Support', icon: HelpCircle, path: '#' },
-  ];
+    // Default ADMIN menu items
+    return [
+      { name: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
+      { name: 'Students', icon: Users, path: '/student-directory' },
+      { name: 'Admissions', icon: UserPlus, path: '#', badge: 'New' },
+      { name: 'Academics', icon: BookOpen, path: '/academic-hub' },
+      { name: 'Attendance', icon: CalendarCheck, path: '#' },
+      { name: 'Staff', icon: IdCard, path: '/staff-directory' },
+      { name: 'Finance', icon: CreditCard, path: '/fee-management' },
+      { name: 'Communication', icon: MessageSquare, path: '/parent-portal', badge: '2' },
+      { name: 'Reports', icon: BarChart3, path: '#' },
+    ];
+  };
+
+  const getBottomItems = (): MenuItem[] => {
+    if (role === 'STUDENT') {
+      return [
+        { name: 'My Profile', icon: User, path: '/student/profile' }
+      ];
+    }
+    return [
+      { name: 'Settings', icon: Settings, path: '#' },
+      { name: 'Support', icon: HelpCircle, path: '#' },
+    ];
+  };
+
+  const menuItems = getMenuItems();
+  const bottomItems = getBottomItems();
 
   const isItemActive = (itemPath: string) => {
     if (itemPath === '#') return false;
@@ -57,6 +85,21 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       return true;
     }
     return currentPath === itemPath;
+  };
+
+  const handleSignOut = () => {
+    logout();
+    navigate('/login');
+  };
+
+  // Determine avatar initials
+  const getInitials = () => {
+    if (!user) return 'US';
+    const parts = user.name.split(' ');
+    if (parts.length > 1) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return user.name.substring(0, 2).toUpperCase();
   };
 
   return (
@@ -81,7 +124,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             EduInd
           </h1>
           <p className="font-body-sm text-[11px] text-slate-400 font-medium tracking-wide mt-0.5 whitespace-nowrap">
-            Smart Education Management
+            {role === 'STUDENT' ? 'Student Portal' : 'Smart Education Management'}
           </p>
         </div>
       </div>
@@ -91,7 +134,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         {/* Main Section */}
         <div>
           <span className="px-3 font-label-caps text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-3">
-            Management
+            {role === 'STUDENT' ? 'Student Workspace' : 'Management'}
           </span>
           <ul className="space-y-1">
             {menuItems.map((item) => {
@@ -159,13 +202,20 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             const Icon = item.icon;
             return (
               <li key={item.name}>
-                <a
-                  href="#"
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-white hover:shadow-sm transition-all duration-150 group"
+                <Link
+                  to={item.path}
+                  onClick={onClose}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-150 group ${
+                    isItemActive(item.path)
+                      ? 'bg-white text-indigo-600 shadow-sm border border-slate-200/50'
+                      : 'text-slate-500 hover:text-slate-900 hover:bg-white hover:shadow-sm'
+                  }`}
                 >
-                  <Icon className="w-4 h-4 text-slate-400 group-hover:text-slate-600" />
-                  <span className="font-title-sm text-xs font-medium">{item.name}</span>
-                </a>
+                  <Icon className={`w-4 h-4 transition-transform group-hover:scale-105 ${
+                    isItemActive(item.path) ? 'text-indigo-650' : 'text-slate-400 group-hover:text-slate-600'
+                  }`} />
+                  <span className="font-title-sm text-xs font-semibold">{item.name}</span>
+                </Link>
               </li>
             );
           })}
@@ -174,16 +224,24 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         {/* User Card */}
         <div className="flex items-center gap-3 p-2 bg-white rounded-xl border border-slate-100 shadow-sm">
           <div className="relative">
-            <div className="w-9 h-9 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-inner">
-              AD
+            <div className="w-9 h-9 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-inner uppercase">
+              {getInitials()}
             </div>
             <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white"></span>
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className="font-title-sm text-xs font-bold text-slate-900 truncate">Good Morning, Admin</h4>
-            <p className="font-body-sm text-[10px] text-slate-400 truncate">Administrator</p>
+            <h4 className="font-title-sm text-xs font-bold text-slate-900 truncate">
+              {user ? user.name : 'Console User'}
+            </h4>
+            <p className="font-body-sm text-[10px] text-slate-400 truncate uppercase font-semibold">
+              {role}
+            </p>
           </div>
-          <button className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-colors">
+          <button
+            onClick={handleSignOut}
+            title="Sign Out"
+            className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all duration-200"
+          >
             <LogOut className="w-4 h-4" />
           </button>
         </div>

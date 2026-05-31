@@ -10,6 +10,7 @@ namespace backend.Data
         }
 
         public DbSet<Student> Students { get; set; }
+        public DbSet<User> Users { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -22,6 +23,18 @@ namespace backend.Data
 
                 // Set default UTC timestamp for CreatedAt
                 entity.Property(e => e.CreatedAt)
+                      .HasDefaultValueSql("CURRENT_TIMESTAMP");
+            });
+
+            modelBuilder.Entity<User>(entity =>
+            {
+                // Unique constraint on Email
+                entity.HasIndex(e => e.Email).IsUnique();
+
+                // Set default UTC timestamps
+                entity.Property(e => e.CreatedAt)
+                      .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.UpdatedAt)
                       .HasDefaultValueSql("CURRENT_TIMESTAMP");
             });
         }
