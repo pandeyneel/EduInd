@@ -4,7 +4,6 @@ import { API_BASE_URL, useApi } from '../api';
 import BackendStatusBanner from '../components/BackendStatusBanner';
 import {
   TrendingUp,
-  BookOpen,
   CalendarCheck,
   CreditCard,
   BarChart3,
@@ -16,7 +15,6 @@ import {
   MapPin,
   ClipboardList,
   AlertCircle,
-  Circle,
   ArrowRight,
   Download,
   Edit2,
@@ -81,7 +79,7 @@ export default function StudentDashboard({ activeTab = 'dashboard' }: StudentDas
   const { user, token, updateUser } = useAuth();
   
   // Custom API fetch hook
-  const { data, loading, error, retry, isFallback } = useApi<StudentDashboardData>('student/dashboard', {
+  const { data, loading, retry, isFallback } = useApi<StudentDashboardData>('student/dashboard', {
     studentId: 'mock-id',
     fullName: user?.name || 'Alexander Lewis',
     email: user?.email || 'alewis.student@eduind.com',
