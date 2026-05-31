@@ -19,12 +19,18 @@ export interface ApiState<T> {
 export async function fetchBackendData<T>(endpoint: string): Promise<T> {
   const url = `${API_BASE_URL}/api/${endpoint}`;
   
+  const token = localStorage.getItem('eduind_token');
+  const headers: HeadersInit = {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+  };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   const response = await fetch(url, {
     method: 'GET',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-    },
+    headers: headers,
   });
 
   if (!response.ok) {
@@ -100,12 +106,18 @@ export async function sendBackendRequest<TInput, TOutput>(
 ): Promise<TOutput> {
   const url = `${API_BASE_URL}/api/${endpoint}`;
   
+  const token = localStorage.getItem('eduind_token');
+  const headers: HeadersInit = {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+  };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   const response = await fetch(url, {
     method: method,
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-    },
+    headers: headers,
     body: body ? JSON.stringify(body) : undefined,
   });
 

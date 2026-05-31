@@ -5,6 +5,7 @@ using backend.Services;
 using backend.DTOs;
 using backend.Models;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +34,7 @@ builder.Services.AddDbContext<EduIndDbContext>(options =>
 // Register Repositories and Services in Dependency Injection (DI) container
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<IStudentService, StudentService>();
+builder.Services.AddSingleton<JwtService>();
 
 // Register OpenAPI support
 builder.Services.AddOpenApi();
@@ -89,6 +91,43 @@ using (var scope = app.Services.CreateScope())
         {
             logger.LogInformation("Database already contains student records. Seeding skipped.");
         }
+
+        // 3. Automatically seed users if the Users table is empty
+        if (!context.Users.Any())
+        {
+            logger.LogInformation("Users table is empty. Seeding default administrator and student accounts...");
+            var adminUser = new User
+            {
+                Id = Guid.NewGuid(),
+                Name = "Admin User",
+                Email = "admin@eduind.com",
+                PasswordHash = PasswordHasher.HashPassword("Admin123"),
+                Role = "ADMIN",
+                Status = "Active",
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            var studentUser = new User
+            {
+                Id = Guid.NewGuid(),
+                Name = "Alexander Lewis",
+                Email = "alewis.student@eduind.com",
+                PasswordHash = PasswordHasher.HashPassword("Student123"),
+                Role = "STUDENT",
+                Status = "Active",
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            context.Users.AddRange(adminUser, studentUser);
+            context.SaveChanges();
+            logger.LogInformation("Database seeded with default accounts: admin@eduind.com and alewis.student@eduind.com.");
+        }
+        else
+        {
+            logger.LogInformation("Database already contains user records. User seeding skipped.");
+        }
     }
     catch (Exception ex)
     {
@@ -104,9 +143,208 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
 
-// --- UPGRADED STUDENT-RELATED APIS (DATABASE-BACKED) ---
+// --- CUSTOM JWT AUTHENTICATION MIDDLEWARE ---
+app.Use(async (context, next) =>
+{
+    var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+    if (authHeader != null && authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+    {
+        var token = authHeader.Substring("Bearer ".Length).Trim();
+        var jwtService = context.RequestServices.GetRequiredService<JwtService>();
+        var principal = jwtService.ValidateToken(token);
+        if (principal != null)
+        {
+            context.User = principal;
+        }
+    }
+    await next();
+});
 
-// 1. GET /api/AdminDashboard: Dynamic student count combined with other mock statistics
+// --- AUTHENTICATION API ENDPOINTS ---
+
+app.MapPost("/api/auth/login", async (LoginDto dto, EduIndDbContext context, JwtService jwtService, ILogger<Program> logger) =>
+{
+    try
+    {
+        logger.LogInformation("Auth: Login attempt for {Email}", dto.Email);
+        var user = await context.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == dto.Email.ToLower());
+        if (user == null || !PasswordHasher.VerifyPassword(dto.Password, user.PasswordHash))
+        {
+            return Results.Json(new { Message = "Invalid email or password" }, statusCode: 400);
+        }
+
+        if (user.Status != "Active")
+        {
+            return Results.Json(new { Message = "Your account is suspended or inactive" }, statusCode: 403);
+        }
+
+        var token = jwtService.GenerateToken(user.Id, user.Email, user.Role, user.Name);
+        return Results.Ok(new AuthResponseDto
+        {
+            Token = token,
+            User = new UserDto
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email,
+                Role = user.Role,
+                Status = user.Status,
+                CreatedAt = user.CreatedAt
+            }
+        });
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Auth Error: Login failed");
+        return Results.Problem("A server error occurred during login", statusCode: 500);
+    }
+});
+
+app.MapGet("/api/auth/me", async (EduIndDbContext context, HttpContext httpContext) =>
+{
+    var email = httpContext.User.FindFirst(ClaimTypes.Email)?.Value;
+    if (string.IsNullOrEmpty(email)) return Results.Unauthorized();
+
+    var user = await context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower());
+    if (user == null) return Results.NotFound(new { Message = "User account not found." });
+
+    return Results.Ok(new UserDto
+    {
+        Id = user.Id,
+        Name = user.Name,
+        Email = user.Email,
+        Role = user.Role,
+        Status = user.Status,
+        CreatedAt = user.CreatedAt
+    });
+}).RequireAuth();
+
+// --- DATA-ISOLATED STUDENT PORTAL API ENDPOINTS ---
+
+app.MapGet("/api/student/dashboard", async (EduIndDbContext context, HttpContext httpContext) =>
+{
+    var email = httpContext.User.FindFirst(ClaimTypes.Email)?.Value;
+    if (string.IsNullOrEmpty(email)) return Results.Unauthorized();
+
+    var student = await context.Students.AsNoTracking().FirstOrDefaultAsync(s => s.Email.ToLower() == email.ToLower());
+    if (student == null) return Results.NotFound(new { Message = "Student profile not found." });
+
+    // Returns custom high-fidelity data isolated specifically for this student
+    return Results.Ok(new
+    {
+        StudentId = student.Id,
+        FullName = $"{student.FirstName} {student.LastName}",
+        Email = student.Email,
+        Grade = student.Grade,
+        Courses = new[]
+        {
+            new { Name = "Advanced Calculus", Progress = 92, Grade = "A" },
+            new { Name = "AP Physics II", Progress = 88, Grade = "B+" },
+            new { Name = "World History II", Progress = 95, Grade = "A" },
+            new { Name = "English Literature", Progress = 84, Grade = "B" }
+        },
+        Attendance = new
+        {
+            PresentRate = 96,
+            TotalDays = 142,
+            Present = 136,
+            Excused = 4,
+            Unexcused = 2
+        },
+        Fees = new
+        {
+            Billed = 4350.00,
+            Paid = 4350.00,
+            Outstanding = 0.00,
+            Status = "Paid",
+            Transactions = new[]
+            {
+                new { Description = "Fall Term Tuition", Amount = 4200.00, Date = "Oct 26, 2026", Status = "Completed" },
+                new { Description = "Laboratory Fee", Amount = 150.00, Date = "Oct 22, 2026", Status = "Completed" }
+            }
+        },
+        Notifications = new[]
+        {
+            new { Text = "Physics Lab Report due by 11:59 PM today", Type = "Warning" },
+            new { Text = "Upcoming Mathematics Quiz on Friday", Type = "Info" }
+        }
+    });
+}).RequireRole("STUDENT");
+
+app.MapGet("/api/student/profile", async (EduIndDbContext context, HttpContext httpContext) =>
+{
+    var email = httpContext.User.FindFirst(ClaimTypes.Email)?.Value;
+    if (string.IsNullOrEmpty(email)) return Results.Unauthorized();
+
+    var student = await context.Students.AsNoTracking().FirstOrDefaultAsync(s => s.Email.ToLower() == email.ToLower());
+    if (student == null) return Results.NotFound(new { Message = "Student profile not found." });
+
+    return Results.Ok(new
+    {
+        Id = student.Id,
+        FirstName = student.FirstName,
+        LastName = student.LastName,
+        Email = student.Email,
+        Grade = student.Grade,
+        AdmissionDate = student.AdmissionDate,
+        CreatedAt = student.CreatedAt,
+        RollNumber = $"STU-{student.AdmissionDate.Year}-{student.Id.ToString()[..4].ToUpper()}"
+    });
+}).RequireRole("STUDENT");
+
+app.MapPut("/api/student/profile", async (UpdateProfileDto dto, EduIndDbContext context, HttpContext httpContext) =>
+{
+    var email = httpContext.User.FindFirst(ClaimTypes.Email)?.Value;
+    if (string.IsNullOrEmpty(email)) return Results.Unauthorized();
+
+    // Verify student ownership
+    var student = await context.Students.FirstOrDefaultAsync(s => s.Email.ToLower() == email.ToLower());
+    if (student == null) return Results.NotFound(new { Message = "Student profile not found." });
+
+    // Parse names from update
+    var nameParts = dto.Name.Trim().Split(' ', 2);
+    var newFirstName = nameParts[0];
+    var newLastName = nameParts.Length > 1 ? nameParts[1] : string.Empty;
+
+    // Check if new email is in use by someone else in Student Directory
+    if (dto.Email.ToLower() != student.Email.ToLower() && 
+        await context.Students.AnyAsync(s => s.Email.ToLower() == dto.Email.ToLower()))
+    {
+        return Results.Conflict(new { Message = "Email address is already in use." });
+    }
+
+    // Sync User record email/name to keep them matched!
+    var userRecord = await context.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower());
+    if (userRecord != null)
+    {
+        userRecord.Name = dto.Name;
+        userRecord.Email = dto.Email;
+        userRecord.UpdatedAt = DateTime.UtcNow;
+    }
+
+    student.FirstName = newFirstName;
+    student.LastName = newLastName;
+    student.Email = dto.Email;
+
+    await context.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        Message = "Profile updated successfully",
+        Student = new
+        {
+            Id = student.Id,
+            FirstName = student.FirstName,
+            LastName = student.LastName,
+            Email = student.Email,
+            Grade = student.Grade,
+            AdmissionDate = student.AdmissionDate
+        }
+    });
+}).RequireRole("STUDENT");
+
+// --- UPGRADED STUDENT-RELATED APIS (DATABASE-BACKED - ADMIN ONLY) ---
+
 app.MapGet("/api/AdminDashboard", async (EduIndDbContext context, ILogger<Program> logger) =>
 {
     try
@@ -114,7 +352,6 @@ app.MapGet("/api/AdminDashboard", async (EduIndDbContext context, ILogger<Progra
         logger.LogInformation("API: Fetching dynamic Admin Dashboard data.");
         int totalEnrolledCount = await context.Students.CountAsync();
         
-        // Return dynamic database count alongside other static mock KPI stats
         return Results.Ok(new 
         { 
             Message = "Data for Admin Dashboard", 
@@ -129,14 +366,13 @@ app.MapGet("/api/AdminDashboard", async (EduIndDbContext context, ILogger<Progra
         return Results.Ok(new 
         { 
             Message = "Data for Admin Dashboard (Fallback)", 
-            TotalEnrolled = 3248, // Static fallback if database has issues
+            TotalEnrolled = 3248, 
             Attendance = 96.2, 
             PendingFees = 42500 
         });
     }
-});
+}).RequireRole("ADMIN");
 
-// 2. GET /api/StudentDirectory: Return dynamic database records in addition to message
 app.MapGet("/api/StudentDirectory", async (IStudentService studentService, ILogger<Program> logger) =>
 {
     try
@@ -154,15 +390,13 @@ app.MapGet("/api/StudentDirectory", async (IStudentService studentService, ILogg
         logger.LogError(ex, "API Error: Failed to fetch Student Directory.");
         return Results.Problem($"Failed to fetch Student Directory: {ex.Message}", statusCode: 500);
     }
-});
+}).RequireRole("ADMIN");
 
-// 3. GET /api/DetailedStudentProfile: Return live details from database for showcase
 app.MapGet("/api/DetailedStudentProfile", async (EduIndDbContext context, ILogger<Program> logger) =>
 {
     try
     {
         logger.LogInformation("API: Fetching Detailed Student Profile.");
-        // Fetch the first student as the showcase profile
         var student = await context.Students
             .AsNoTracking()
             .OrderBy(s => s.CreatedAt)
@@ -193,16 +427,16 @@ app.MapGet("/api/DetailedStudentProfile", async (EduIndDbContext context, ILogge
         logger.LogError(ex, "API Error: Failed to fetch Detailed Student Profile.");
         return Results.Problem($"Failed to fetch profile: {ex.Message}", statusCode: 500);
     }
-});
+}).RequireRole("ADMIN");
 
-// --- RETAINED MOCK APIS (PREVENTS FRONTEND BREAKING) ---
-app.MapGet("/api/StaffDirectory", () => new { Message = "Data for Staff Directory" });
-app.MapGet("/api/AcademicHub", () => new { Message = "Data for Academic Hub" });
-app.MapGet("/api/FeeManagement", () => new { Message = "Data for Fee Management" });
-app.MapGet("/api/ParentStudentPortal", () => new { Message = "Data for Parent Portal" });
+// --- RETAINED MOCK APIS (PREVENTS FRONTEND BREAKING - ADMIN ONLY) ---
+app.MapGet("/api/StaffDirectory", () => new { Message = "Data for Staff Directory" }).RequireRole("ADMIN");
+app.MapGet("/api/AcademicHub", () => new { Message = "Data for Academic Hub" }).RequireRole("ADMIN");
+app.MapGet("/api/FeeManagement", () => new { Message = "Data for Fee Management" }).RequireRole("ADMIN");
+app.MapGet("/api/ParentStudentPortal", () => new { Message = "Data for Parent Portal" }).RequireRole("ADMIN");
 
-// --- Student CRUD API Endpoints ---
-var studentsApi = app.MapGroup("/api/students");
+// --- Student CRUD API Endpoints (ADMIN ONLY) ---
+var studentsApi = app.MapGroup("/api/students").RequireRole("ADMIN");
 
 // Helper to validate model annotations in Minimal APIs
 IResult ValidateModel<T>(T model)
@@ -331,3 +565,67 @@ studentsApi.MapDelete("/{id:guid}", async (Guid id, IStudentService studentServi
 });
 
 app.Run();
+
+// --- SECURITY AND ROLES MINIMAL API ENDPOINT FILTERS ---
+public static class EndpointSecurityExtensions
+{
+    public static RouteHandlerBuilder RequireRole(this RouteHandlerBuilder builder, string role)
+    {
+        return builder.AddEndpointFilter(async (context, next) =>
+        {
+            var user = context.HttpContext.User;
+            if (user.Identity == null || !user.Identity.IsAuthenticated)
+            {
+                return Results.Json(new { Message = "Not authenticated" }, statusCode: 401);
+            }
+            if (!user.IsInRole(role))
+            {
+                return Results.Json(new { Message = "Insufficient permissions" }, statusCode: 403);
+            }
+            return await next(context);
+        });
+    }
+
+    public static RouteGroupBuilder RequireRole(this RouteGroupBuilder builder, string role)
+    {
+        return builder.AddEndpointFilter(async (context, next) =>
+        {
+            var user = context.HttpContext.User;
+            if (user.Identity == null || !user.Identity.IsAuthenticated)
+            {
+                return Results.Json(new { Message = "Not authenticated" }, statusCode: 401);
+            }
+            if (!user.IsInRole(role))
+            {
+                return Results.Json(new { Message = "Insufficient permissions" }, statusCode: 403);
+            }
+            return await next(context);
+        });
+    }
+
+    public static RouteHandlerBuilder RequireAuth(this RouteHandlerBuilder builder)
+    {
+        return builder.AddEndpointFilter(async (context, next) =>
+        {
+            var user = context.HttpContext.User;
+            if (user.Identity == null || !user.Identity.IsAuthenticated)
+            {
+                return Results.Json(new { Message = "Not authenticated" }, statusCode: 401);
+            }
+            return await next(context);
+        });
+    }
+
+    public static RouteGroupBuilder RequireAuth(this RouteGroupBuilder builder)
+    {
+        return builder.AddEndpointFilter(async (context, next) =>
+        {
+            var user = context.HttpContext.User;
+            if (user.Identity == null || !user.Identity.IsAuthenticated)
+            {
+                return Results.Json(new { Message = "Not authenticated" }, statusCode: 401);
+            }
+            return await next(context);
+        });
+    }
+}
